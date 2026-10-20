@@ -1,0 +1,27 @@
+# 构建产物
+app/build/
+*.idsig
+
+# 签名材料 —— 永不入库
+tools/*.keystore
+tools/*.jks
+*.keystore
+*.jks
+
+# 备份与临时文件
+*.bak
+*.bak*
+_*_test.js
+_check.js
+_e2e_qr.js
+_t_body.js
+_parse_test.js
+
+# IDE / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 图标工程中间产物
+app/icon_*.png

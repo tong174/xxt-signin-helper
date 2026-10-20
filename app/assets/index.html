@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#2a56d4">
+<title>学习通助手</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--line:#eceef2;--pri:#3b6ef5;--pri2:#2a56d4;--ok:#12a05c;
+  --warn:#f59e0b;--t1:#171c26;--t2:#5c6779;--t3:#98a2b3;
+  --r:14px;--sh:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.06)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--t1);display:flex;flex-direction:column;overflow:hidden}
+header{background:linear-gradient(135deg,#4a7cf7,#2a56d4);color:#fff;
+  padding:calc(14px + env(safe-area-inset-top)) 18px 14px;flex:0 0 auto;
+  box-shadow:0 3px 14px rgba(42,86,212,.22)}
+.hrow{display:flex;align-items:center;gap:10px}
+.hrow h1{margin:0;font-size:17px;font-weight:650;flex:1}
+.hbtn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex:0 0 auto}
+.hbtn:active{background:rgba(255,255,255,.34)}
+.hsub{font-size:12px;opacity:.82;margin-top:3px}
+main{flex:1;overflow-y:auto;padding:12px 12px calc(20px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling:touch}
+.card{background:var(--card);border-radius:var(--r);padding:15px;margin-bottom:11px;box-shadow:var(--sh)}
+.card h2{margin:0 0 11px;font-size:14.5px;font-weight:650;display:flex;align-items:center;gap:7px}
+.card h2 .dot{width:3px;height:15px;background:var(--pri);border-radius:2px}
+.cnt{margin-left:auto;font-size:12px;font-weight:500;color:var(--t3)}
+label{display:block;font-size:12.5px;color:var(--t2);margin:10px 0 5px;font-weight:500}
+input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid #e3e6ec;border-radius:11px;
+  font-size:15px;background:#fbfcfd;font-family:inherit;outline:none;color:var(--t1);transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--pri);background:#fff;
+  box-shadow:0 0 0 3px rgba(59,110,245,.1)}
+textarea{min-height:76px;resize:vertical;font-size:13.5px}
+select{appearance:none;padding-right:34px;
+  background-image:linear-gradient(45deg,transparent 50%,#98a2b3 50%),linear-gradient(135deg,#98a2b3 50%,transparent 50%);
+  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px,5px 5px;
+  background-repeat:no-repeat}
+button{width:100%;padding:12px;border:0;border-radius:11px;font-size:15px;font-weight:600;
+  background:var(--pri);color:#fff;margin-top:10px;cursor:pointer;font-family:inherit;
+  transition:transform .08s,background .15s}
+button:active{transform:scale(.985);background:var(--pri2)}
+button:disabled{background:#c8d1e0;transform:none}
+button.g{background:#eef2f9;color:#3d4a5e}
+button.g:active{background:#e2e8f3}
+button.ok{background:var(--ok)}
+button.ok:active{background:#0d8149}
+button.wn{background:var(--warn)}
+button.sm{padding:8px 14px;font-size:13px;width:auto;margin:0;border-radius:9px}
+.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}
+.act{padding:12px 0;border-bottom:1px solid var(--line)}.act:last-child{border-bottom:0}
+.act .ttl{font-size:15px;font-weight:600;margin-bottom:6px;line-height:1.35}
+.act .meta{font-size:12.5px;color:var(--t3)}
+.act .ops{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;font-size:11px;padding:3px 8px;border-radius:6px;
+  font-weight:600;line-height:1.35;background:#eef2f9;color:#5c6779;margin-right:5px}
+.pill.live{background:#e4f8ee;color:#0d8149}
+.pill.off{background:#f2f3f5;color:#98a2b3}
+.pill.tp{background:#e9f0ff;color:#2a56d4}
+.empty{text-align:center;padding:30px 0;color:var(--t3);font-size:13.5px}
+#log{display:none;background:#161b26;color:#b9c4d4;font:11.5px/1.65 Menlo,Consolas,monospace;
+  padding:10px 14px;max-height:34%;overflow:auto;white-space:pre-wrap;flex:0 0 auto;border-top:1px solid #000}
+#log.on{display:block}
+#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(23,28,38,.94);
+  color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;z-index:9999;display:none;
+  max-width:84%;text-align:center;white-space:pre-wrap;line-height:1.55;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+#mask{position:fixed;inset:0;background:rgba(15,20,30,.45);z-index:900;display:none}
+#sheet{position:fixed;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;
+  padding:8px 18px calc(18px + env(safe-area-inset-bottom));z-index:901;display:none;
+  max-height:90%;overflow-y:auto;box-shadow:0 -6px 30px rgba(0,0,0,.14)}
+#sheet:before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:#e3e6ec;margin:6px auto 12px}
+#sheet h3{margin:0 0 12px;font-size:17px;font-weight:650}
+.hint{font-size:12.5px;color:var(--t3);margin-top:7px;line-height:1.6}
+.warn{background:#fff8ec;border:1px solid #ffe2b3;color:#8a5a00;font-size:12.5px;
+  padding:10px 12px;border-radius:10px;margin-top:9px;line-height:1.6}
+.kv{display:flex;gap:10px;padding:7px 0;font-size:14px;border-bottom:1px solid var(--line)}
+.kv:last-of-type{border-bottom:0}
+.kv b{flex:0 0 82px;color:var(--t2);font-weight:500}
+.kv span{flex:1;word-break:break-all}
+.kv span.hi{color:var(--ok);font-weight:700}
+.kv span.code{color:#a35c00;font-weight:700;letter-spacing:2px;font-size:16px}
+#qrwrap{display:flex;justify-content:center;padding:12px 0}
+#qrwrap canvas{border:10px solid #fff;border-radius:10px;box-shadow:0 3px 16px rgba(0,0,0,.13)}
+.linkbox{background:#f7f8fa;border:1px solid #e8ebf0;border-radius:10px;padding:10px 12px;
+  font:11.5px/1.55 Menlo,Consolas,monospace;word-break:break-all;color:#4a5668;max-height:100px;overflow:auto}
+#camwrap{position:relative;background:#0d1220;border-radius:12px;overflow:hidden;height:270px}
+#camfull{position:fixed;inset:0;background:#000;z-index:99999;display:flex;flex-direction:column;overflow:hidden}
+#camfull video{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.cbar{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px;background:linear-gradient(180deg,rgba(0,0,0,.72),rgba(0,0,0,0));color:#fff;font-size:14.5px}
+.cbar button{background:rgba(255,255,255,.18);border:0;color:#fff;width:36px;height:36px;border-radius:50%;
+  font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.cframe{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(68vw,300px);height:min(68vw,300px);z-index:2}
+.cframe i{position:absolute;width:36px;height:36px;border:3.5px solid #4a7cf7}
+.cframe i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.cframe i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.cframe i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.cframe i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.claser{position:absolute;left:6%;right:6%;height:2.5px;background:linear-gradient(90deg,transparent,#4a7cf7,transparent);
+  box-shadow:0 0 14px #4a7cf7;animation:cl 2.2s ease-in-out infinite}
+@keyframes cl{0%,100%{top:6%}50%{top:94%}}
+.cdark{position:absolute;left:0;right:0;z-index:1;background:rgba(0,0,0,.42);pointer-events:none}
+.cbtns{position:relative;z-index:3;margin-top:auto;padding:0 18px 42px;display:flex;gap:10px}
+.cbtns button{flex:1;padding:14px 0;border-radius:12px;border:0;font-size:14.5px;font-weight:600;
+  background:rgba(255,255,255,.19);color:#fff;backdrop-filter:blur(6px)}
+.cbtns button.alt{background:rgba(74,124,247,.92)}
+#cam{width:100%;height:100%;object-fit:cover;display:block}
+#scanline{position:absolute;left:12%;right:12%;top:50%;height:2px;background:rgba(74,124,247,.9);
+  box-shadow:0 0 12px rgba(74,124,247,.9);animation:sc 2s ease-in-out infinite}
+@keyframes sc{0%,100%{top:22%}50%{top:78%}}
+.row2{display:flex;gap:8px;margin-bottom:9px}
+.row2 select{flex:1;margin-bottom:0}
+.row2 button{flex:0 0 96px;margin-bottom:0}
+.gitem{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid #f0f2f6}
+.gitem:last-child{border-bottom:0}
+.gitem .gname{flex:1;font-size:13.5px;word-break:break-all}
+.gitem button{margin:0;padding:7px 12px;font-size:12.5px;flex:0 0 auto;border-radius:9px}
+.aitem{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #f0f2f6}
+.aitem:last-child{border-bottom:0}
+.aitem .aname{flex:1;font-size:13.5px}
+.aitem .atag{font-size:11px;color:#12a150;background:#e8f8ef;padding:2px 7px;border-radius:20px}
+.aitem del{cursor:pointer;color:#c33;font-size:17px;padding:0 6px;text-decoration:none}
+.tabs{display:flex;gap:7px;margin-bottom:11px}
+.tab{flex:1;text-align:center;padding:9px 0;border-radius:10px;font-size:13.5px;font-weight:600;
+  background:#eef2f9;color:#5c6779;cursor:pointer}
+.tab.on{background:var(--pri);color:#fff}
+/* ===== v3.0 深色模式（html.dk 由原生注入 uiMode 或手动切换驱动） ===== */
+html.dk{--bg:#10131a;--card:#1a1f29;--line:#262d3a;--t1:#e7eaf1;--t2:#a5adbd;--t3:#6d7686;
+  --sh:0 1px 3px rgba(0,0,0,.4)}
+html.dk header{background:linear-gradient(135deg,#33569e,#22407a);box-shadow:0 3px 14px rgba(0,0,0,.4)}
+html.dk input,html.dk select,html.dk textarea{background:#141824;border-color:#2b3342;color:var(--t1)}
+html.dk input:focus,html.dk select:focus,html.dk textarea:focus{background:#171c29;border-color:#4a7cf7;
+  box-shadow:0 0 0 3px rgba(74,124,247,.16)}
+html.dk select{background-image:linear-gradient(45deg,transparent 50%,#6d7686 50%),linear-gradient(135deg,#6d7686 50%,transparent 50%)}
+html.dk button.g{background:#232a38;color:#c4ccdd}
+html.dk button.g:active{background:#2c3546}
+html.dk button:disabled{background:#39414f;color:#7d8595}
+html.dk #sheet{background:#1a1f29}
+html.dk #sheet:before{background:#2b3342}
+html.dk #toast{background:rgba(240,244,252,.95);color:#171c26}
+html.dk .warn{background:#291f10;border-color:#4d3a17;color:#e3b763}
+html.dk .linkbox{background:#141824;border-color:#262d3a;color:#98a2b3}
+html.dk .gitem,html.dk .aitem,html.dk .kv,html.dk .act{border-color:#232a38}
+html.dk .pill{background:#232a38;color:#a5adbd}
+html.dk .pill.live{background:#123320;color:#43d177}
+html.dk .pill.off{background:#232833;color:#6d7686}
+html.dk .pill.tp{background:#1b2a4d;color:#84a6ff}
+html.dk .tab{background:#232a38;color:#a5adbd}
+html.dk .tab.on{background:var(--pri);color:#fff}
+html.dk .hbtn{background:rgba(255,255,255,.14)}
+html.dk #qrwrap canvas{border-color:#e7eaf1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <h1>📚 学习通助手</h1>
+    <div class="hbtn" id="btn-theme" title="主题">🌗</div>
+    <div class="hbtn" id="btn-log">⋯</div>
+  </div>
+  <div class="hsub" id="hd">直连官方接口 · 无需密钥 · 零消耗</div>
+</header>
+
+<main>
+  <div class="card" id="v-login">
+    <h2><i class="dot"></i>登录学习通</h2>
+    <label>手机号</label>
+    <input id="un" type="tel" placeholder="请输入学习通账号" autocomplete="off">
+    <label>密码</label>
+    <input id="pw" type="password" placeholder="请输入密码" autocomplete="off">
+    <button id="do-login">登 录</button>
+    <button class="g" id="do-forget">清除已保存账号</button>
+    <div class="hint">密码只在本机使用，直接提交给学习通官方接口，不经任何第三方</div>
+  </div>
+
+  <div id="v-main" style="display:none">
+    <div class="tabs">
+      <div class="tab on" data-t="sign">签到</div>
+      <div class="tab" data-t="scan">扫码</div>
+      <div class="tab" data-t="me">我的</div>
+    </div>
+
+    <div id="tab-sign">
+      <div class="card" id="pend" style="display:none;border-left:3px solid #e0533d"></div>
+      <div class="card">
+        <h2><i class="dot"></i>课程<span class="cnt" id="ccnt"></span></h2>
+        <select id="course"></select>
+        <input id="filter" placeholder="搜索课程 / 班级" style="margin-top:9px">
+        <button id="do-load">加载签到列表</button>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>快捷操作</h2>
+        <button class="ok" id="do-auto">🎯 一键签到（扫描所有进行中）</button>
+        <button class="g" id="do-refresh">🔄 刷新课程</button>
+        <button class="g" id="do-multi">👥 多账号代签</button>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>自动检测签到<span class="pill" id="mon-pill" style="display:none">运行中</span></h2>
+        <div class="hint">后台每隔一段时间扫描全部课程的进行中签到，发现即自动签。</div>
+        <div class="row2">
+          <select id="mon-interval">
+            <option value="30">每 30 秒</option>
+            <option value="60" selected>每 1 分钟</option>
+            <option value="180">每 3 分钟</option>
+            <option value="300">每 5 分钟</option>
+            <option value="600">每 10 分钟</option>
+          </select>
+          <button class="ok" id="do-mon">▶ 开启</button>
+        </div>
+        <div class="kv"><b>已检次数</b><span id="mon-cnt">0</span></div>
+        <div class="kv"><b>自动签到</b><span id="mon-signed">0 次</span></div>
+        <div class="kv"><b>最近扫描</b><span id="mon-last">-</span></div>
+      </div>
+      <div id="list"></div>
+    </div>
+
+    <div id="tab-scan" style="display:none">
+      <div class="card">
+        <h2><i class="dot"></i>扫码签到</h2>
+        <div class="hint">对准教师投屏的签到二维码。扫到后立即签到，并可以分享给同学。</div>
+        <button id="do-cam">📷 打开摄像头扫码</button>
+        <button class="g" id="do-album">🖼 从相册选图识别</button>
+        <button class="g" id="do-paste">📋 粘贴二维码内容</button>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>人脸识别签到</h2>
+        <div class="hint">上传一张本人照片保存为「人脸 ID」，人脸签到和部分二维码签到会自动带上。<br>
+          也可以一键拉取你在学习通的<b>学籍照</b>。</div>
+        <button id="do-face-up">📷 上传/拍摄本人照片</button>
+        <button class="g" id="do-face-pull">🪪 拉取我的学籍照</button>
+        <div class="kv"><b>人脸 ID</b><span id="face-oid" class="code">-</span></div>
+        <div class="kv"><b>校验分</b><span id="face-score">-</span></div>
+        <button class="g" id="do-face-probe">🔍 换 enc 诊断（看能否免扫码）</button>
+        <button class="g" id="do-face-del">🗑 删除人脸 ID</button>
+        <input type="file" id="face-file" accept="image/*" style="display:none">
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>群聊签到</h2>
+        <div class="hint">从学习通群聊里直接读取签到活动 —— <b>群聊里的二维码签到不需要扫码</b>。</div>
+        <button id="do-groups">💬 加载我的群聊</button>
+        <div id="glist"></div>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>用同学的密钥签到</h2>
+        <div class="hint">一个在现场的同学扫到二维码后，把 <b>enc 密钥</b> 发出来，其他人无视 10 秒过期直接签到。</div>
+        <label>粘贴 enc / 分享链接</label>
+        <textarea id="encin" placeholder="粘贴 enc=xxxx 或 xxtqd:// 分享链接"></textarea>
+        <button class="ok" id="do-enc">用这个密钥签到</button>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>已缓存的密钥<span class="cnt" id="encc-cnt2"></span></h2>
+        <div id="enclist"></div>
+      </div>
+    </div>
+
+    <div id="tab-me" style="display:none">
+      <div class="card">
+        <h2><i class="dot"></i>账号</h2>
+        <div class="kv"><b>账号</b><span id="me-un">-</span></div>
+        <div class="kv"><b>会话 UID</b><span id="me-uid">-</span></div>
+        <div class="kv"><b>学校 FID</b><span id="me-fid">-</span></div>
+        <div class="kv"><b>课程数</b><span id="me-cnt">-</span></div>
+        <button class="g" id="do-logout">退出登录</button>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>签到记录<span class="cnt" id="hist-cnt"></span></h2>
+        <div id="histlist"></div>
+        <button class="g" id="do-hist">🔄 刷新记录</button>
+        <button class="g" id="do-hist-clear">清空记录</button>
+        <div class="kv"><b>enc 缓存</b><span id="encc-cnt">0 条</span></div>
+        <button class="g" id="do-encc-clear">清空 enc 缓存</button>
+        <button class="g" id="do-cache-clear">清空课程/活动缓存</button>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>多账号（代签）<span class="cnt" id="acc-cnt"></span></h2>
+        <div class="hint">添加其他同学的账号，可一键替他们签到。密码只存在本机。</div>
+        <div id="acclist"></div>
+        <label>账号</label>
+        <input id="acc-un" type="tel" placeholder="对方学习通账号" autocomplete="off">
+        <label>密码</label>
+        <input id="acc-pw" type="password" placeholder="对方密码" autocomplete="off">
+        <button class="ok" id="do-acc-add">➕ 添加账号</button>
+        <button class="g" id="do-acc-clear">清空所有子账号</button>
+      </div>
+      <div class="card">
+        <h2><i class="dot"></i>关于</h2>
+        <div class="kv"><b>版本</b><span>v3.0（页面）· <span id="ver-native">原生…</span></span></div>
+        <div class="kv"><b>原理</b><span>直连学习通官方接口</span></div>
+        <div class="kv"><b>消耗</b><span class="hi">零消耗 · 无密钥</span></div>
+        <div class="hint">协议参考 GitHub 开源项目 cxOrz/chaoxing-signin、MetaQiu/xxtSignApi、ChaoxingSignFaker</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="log"></div>
+<div id="mask"></div>
+<div id="sheet"></div>
+<div id="toast"></div>
+
+<script src="jsqr.min.js"></script>
+<script src="qr.js"></script>
+<script>
+function b64(s){const b=new TextEncoder().encode(s);let t='';for(let i=0;i<b.length;i++)t+=String.fromCharCode(b[i]);return btoa(t);}
+async function api(m,u,b,f){
+  const r=await fetch('https://xxt.local/r?d='+encodeURIComponent(b64(JSON.stringify({m:m,u:u,b:b||'',x:f?1:0}))));
+  const t=await r.text();
+  try{return JSON.parse(t);}catch(e){return {__raw:t,__status:r.status};}
+}
+const GET=u=>api('GET',u),POST=(u,b)=>api('POST',u,b,true);
+function b64u(s){const b=new TextEncoder().encode(s);let t='';for(let i=0;i<b.length;i++)t+=String.fromCharCode(b[i]);
+  return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function ub64(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';
+  const n=atob(s),b=new Uint8Array(n.length);for(let i=0;i<n.length;i++)b[i]=n.charCodeAt(i);
+  return new TextDecoder().decode(b);}
+
+const $=id=>document.getElementById(id);
+function log(m){const e=$('log');e.textContent+='['+new Date().toTimeString().slice(0,8)+'] '+m+'\n';e.scrollTop=e.scrollHeight;}
+let tt=null;
+function toast(m,ms){const e=$('toast');e.textContent=m;e.style.display='block';
+  clearTimeout(tt);tt=setTimeout(()=>e.style.display='none',ms||2200);}
+function sheet(h){$('sheet').innerHTML=h;$('sheet').style.display='block';$('mask').style.display='block';$('sheet').scrollTop=0;}
+function closeSheet(){$('sheet').style.display='none';$('mask').style.display='none';stopCam();}
+$('mask').onclick=closeSheet;
+$('btn-log').onclick=()=>$('log').classList.toggle('on');
+
+const ST={uid:'',fid:'',un:'',courses:[],acts:[],live:[]};
+const LS={g:(k,d)=>{try{return localStorage.getItem('xxt_'+k)||d;}catch(e){return d;}},
+  s:(k,v)=>{try{localStorage.setItem('xxt_'+k,v);}catch(e){}},
+  d:k=>{try{localStorage.removeItem('xxt_'+k);}catch(e){}}};
+
+/* ===== v3.0 主题（auto/light/dark）：auto 跟随系统 uiMode（由原生壳注入） ===== */
+let NATIVE_DARK=false;
+const THEME={
+  get(){return LS.g('theme','auto');},
+  set(v){LS.s('theme',v);THEME.apply();},
+  apply(){
+    const v=THEME.get();
+    const dk=v==='dark'||(v==='auto'&&NATIVE_DARK);
+    document.documentElement.classList.toggle('dk',dk);
+    const b=$('btn-theme');
+    if(b)b.textContent=v==='dark'?'🌙':(v==='light'?'☀️':'🌗');
+  }
+};
+/* 原生壳在页面加载完成后注入系统深色状态 */
+window.__xxtNight=function(d){NATIVE_DARK=!!d;THEME.apply();};
+(function(){
+  const b=$('btn-theme');
+  if(b)b.onclick=()=>{
+    const v=THEME.get();
+    THEME.set(v==='auto'?'light':(v==='light'?'dark':'auto'));
+    const n=THEME.get();
+    toast('主题：'+(n==='auto'?'跟随系统':(n==='light'?'浅色':'深色')),1200);
+  };
+  THEME.apply();
+})();
+
+const TYPE={0:'普通签到',2:'二维码签到',3:'手势签到',4:'位置签到',5:'签到码'};
+const H='https://mobilelearn.chaoxing.com';
+const PPT=H+'/pptSign/stuSignajax',PRESIGN=H+'/newsign/preSign';
+const ANALYSIS=H+'/pptSign/analysis',ANALYSIS2=H+'/pptSign/analysis2';
+const CHK=H+'/widget/sign/pcStuSignController/checkSignCode';
+const AINFO=a=>H+'/v2/apis/active/getPPTActiveInfo?activeId='+a+'&_='+Date.now();
+const ALIST=(c,k)=>H+'/v2/apis/active/student/activelist?fid=0&courseId='+c+'&classId='+k+'&showNotStartedActive=0&_='+Date.now();
+const raw=t=>String((t&&t.__raw!==undefined)?t.__raw:JSON.stringify(t));
+
+async function login(u,p){
+  /* v3.0：登录前先清空原生 Cookie 罐，避免上一个账号的会话残留串号 */
+  try{await fetch('https://xxt.local/clearcookies');}catch(e){}
+  const r=await POST('https://passport2.chaoxing.com/fanyalogin',
+    'fid=-1&uname='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+
+    '&refer='+encodeURIComponent('https://i.chaoxing.com')+
+    '&t=true&forbidotherlogin=0&validate=&doubleFactorLogin=0&independentId=0');
+  log('登录响应: '+JSON.stringify(r).slice(0,100));
+  return !!(r&&r.status);
+}
+async function readIds(){
+  try{const c=await (await fetch('https://xxt.local/cookies')).json();
+    ST.uid=c._uid||c.UID||'';ST.fid=c.fid||'0';
+    $('me-uid').textContent=ST.uid||'-';$('me-fid').textContent=ST.fid||'-';
+    log('会话 _uid='+ST.uid+' fid='+ST.fid);
+  }catch(e){log('读会话失败: '+e.message);}
+}
+async function getCourses(){
+  /* v3.0：缓存按 uid 隔离 —— 多账号代签时子账号不会误用主账号课程 */
+  const ckKey='courses_'+(ST.uid||'anon');
+  const ck0=CACHE.get(ckKey,600000);
+  if(ck0&&ck0.length){log('课程来自缓存（'+ck0.length+' 门，10 分钟内有效）');return ck0;}
+  const map={},add=(c,k,n,cn,t,extra)=>{if(!c||!k)return;const key=c+'_'+k;
+    if(!map[key])map[key]={courseId:String(c),classId:String(k),name:n||'',className:cn||'',teacher:t||'',src:(extra&&extra.src)||'',hidden:!!(extra&&extra.hidden)};};
+  try{
+    const r=await GET('https://mooc1.chaoxing.com/mycourse/backclazzdata?view=json&rss=1&_='+Date.now());
+    (r.channelList||[]).forEach(ch=>{const c=ch.content||{};
+      ((c.course||{}).data||[]).forEach(d=>add(d.id,c.id,d.name,c.name,d.teacherfactor));});
+    log('课程源1 backclazzdata: '+Object.keys(map).length+' 门');
+  }catch(e){log('课程源1 失败: '+e.message);}
+  try{
+    const r=await POST('https://mooc1-1.chaoxing.com/visit/courselistdata',
+      'courseType=1&courseFolderId=0&baseEducation=0&superstarClass=0&pageSize=1000');
+    const html=(r&&r.__raw)||'';
+    const re=/<li class="course clearfix"[^>]*courseId="(\d+)"[^>]*clazzId="(\d+)"[\s\S]*?<span class="course-name[^"]*" title="([^"]*)"/g;
+    let m;while((m=re.exec(html)))add(m[1],m[2],m[3]);
+    log('课程源2 courselistdata: 合并后 '+Object.keys(map).length+' 门');
+  }catch(e){log('课程源2 失败: '+e.message);}
+  /* 源3：镜像课程（移动端隐藏课程）—— mobile3.chaoxing.com，小北云同款
+     返回 data[].clazz.data[]，每项：courseid / id(classId) / course.data[0].name / isretire */
+  try{
+    const r=await GET('https://mobile3.chaoxing.com/mobile/mirrorcourseList?fid='
+      +encodeURIComponent(ST.fid||'0')+'&uid='+encodeURIComponent(ST.uid||'')
+      +'&_='+Date.now());
+    let cnt=0;
+    ((r&&r.data)||[]).forEach(it=>{
+      ((it.clazz||{}).data||[]).forEach(D=>{
+        if(!D||!D.courseid) return;
+        const cd=((D.course||{}).data||[])[0]||{};
+        const kid=String(D.id==null?'':D.id).split('_').pop();
+        if(!kid) return;
+        add(D.courseid, kid, cd.name||D.name||'', D.name||'', cd.teacherfactor||'', {src:'mirror',hidden:true});
+        cnt++;
+      });
+    });
+    log('课程源3 镜像课程: 原始 '+cnt+' 条，合并后共 '+Object.keys(map).length+' 门');
+  }catch(e){log('课程源3 失败: '+e.message);}
+
+  /* 源4：会议课程（可选，失败不影响） */
+  try{
+    const r=await GET('https://k.chaoxing.com/pc/meet/index_mymeet_v2?offsetUpdateTime=&pageSize=999&page=1&_='+Date.now());
+    let n=0;
+    const list=(r&&(r.data||r.list))||[];
+    (Array.isArray(list)?list:[]).forEach(m=>{
+      const c=m.courseId||m.courseid, k=m.classId||m.clazzId;
+      if(c&&k){add(c,k,m.name||m.courseName||'',m.clazzName||'','',{src:'meet'});n++;}
+    });
+    if(n) log('课程源4 会议课程: '+n+' 条');
+  }catch(e){/* 静默 */}
+
+  const out=Object.keys(map).map(k=>map[k]);
+  if(out.length)CACHE.put(ckKey,out);
+  return out;
+}
+
+const ACTINFO=async a=>{const r=await GET(AINFO(a.id));return (r&&r.data)||{};};
+async function loadActs(c){
+  const ak='acts_'+(ST.uid||'anon')+'_'+c.courseId+'_'+c.classId;   /* v3.0：按账号隔离 */
+  const ck=CACHE.get(ak,25000);
+  if(ck&&ck.length)return ck;
+  const r=await GET(ALIST(c.courseId,c.classId));
+  const d=r.data||{};
+  const list=d.activeList||r.activeList||[];
+  if(list.length)CACHE.put(ak,list);
+  return list;
+}
+const codeOf=d=>(d&&d.signCode&&String(d.signCode).trim())||'';
+const chkCode=(a,c)=>GET(CHK+'?activeId='+a+'&signCode='+encodeURIComponent(c));
+
+async function preSign(aid,cid,kid){
+  try{
+    await GET(PRESIGN+'?courseId='+(cid||'')+'&classId='+(kid||'')+'&activePrimaryId='+aid+
+      '&general=1&sys=1&ls=1&appType=15&&tid=&uid='+ST.uid+'&ut=s');
+    const a1=await GET(ANALYSIS+'?vs=1&DB_STRATEGY=RANDOM&aid='+aid);
+    const html=(a1&&a1.__raw)||'';
+    let code='';const i=html.indexOf("code='+'");
+    if(i>=0){code=html.substring(i+8);code=code.substring(0,code.indexOf("'"));}
+    if(code)await GET(ANALYSIS2+'?DB_STRATEGY=RANDOM&code='+encodeURIComponent(code));
+    await new Promise(r=>setTimeout(r,500));
+    log('[预签] 完成');
+  }catch(e){log('[预签] 跳过: '+e.message);}
+}
+const pcFace=fc=>fc?('&faceImageObjectId='+encodeURIComponent(fc)):'';
+const gSign=(a,n,fc)=>GET(PPT+'?activeId='+a+'&uid='+ST.uid+'&clientip=&latitude=-1&longitude=-1&appType=15&fid='+ST.fid+'&name='+encodeURIComponent(n||'')+pcFace(fc));
+const lSign=(a,n,lat,lng,ad,fc)=>GET(PPT+'?name='+encodeURIComponent(n||'')+'&address='+encodeURIComponent(ad||'')+
+  '&activeId='+a+'&uid='+ST.uid+'&clientip=&latitude='+lat+'&longitude='+lng+'&fid='+ST.fid+'&appType=15&ifTiJiao=1'+pcFace(fc));
+const qSign=(a,n,enc,lat,lng,ad,fc)=>{
+  const loc='{"result":"1","address":"'+String(ad||'').replace(/"/g,'')+'","latitude":'+(Number(lat)||0)+
+    ',"longitude":'+(Number(lng)||0)+',"altitude":"0"}';
+  return GET(PPT+'?enc='+encodeURIComponent(enc||'')+'&name='+encodeURIComponent(n||'')+'&activeId='+a+
+    '&uid='+ST.uid+'&clientip=&location='+encodeURIComponent(loc)+'&latitude=-1&longitude=-1&fid='+ST.fid+'&appType=15'+pcFace(fc));
+};
+async function submit(a,d,o){
+  o=o||{};
+  const tp=Number((d&&d.otherId!=null)?d.otherId:a.otherId);
+  const nm=(d&&d.name)||a.nameOne||a.name||'';
+  const lat=o.lat,lng=o.lng,ad=o.address||(d&&d.locationText)||'';
+  /* v3.0：o 里显式带 face 键（哪怕是空串）就以它为准 —— 子账号代签不能挂主账号的人脸 */
+  const fc=('face' in o)?o.face:(typeof FACE!=='undefined'?FACE.oid():'');
+  if(o.enc)return raw(await qSign(a.id,nm,o.enc,lat,lng,ad,fc));
+  if(tp===4&&lat&&lng)return raw(await lSign(a.id,nm,lat,lng,ad,fc));
+  return raw(await gSign(a.id,nm,fc));
+}
+
+const ft=ts=>{if(!ts)return'';const d=new Date(ts),p=n=>(n<10?'0':'')+n;
+  return (d.getMonth()+1)+'/'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes());};
+
+function render(list){
+  const box=$('list');
+  if(!list.length){box.innerHTML='<div class="card"><div class="empty">这门课还没有签到活动</div></div>';return;}
+  ST.live=list.filter(a=>a.status===1);
+  const sorted=list.slice().sort((a,b)=>(b.status===1)-(a.status===1));
+  box.innerHTML='<div class="card"><h2><i class="dot"></i>签到活动'+
+    (ST.live.length?'<span class="pill live">进行中 '+ST.live.length+'</span>':'')+
+    '<span class="cnt">共 '+list.length+' 个</span></h2><div id="ab"></div></div>';
+  const ab=$('ab');
+  const signedSet=HIST.signedSet();
+  const pendSet=PEND.set();
+  sorted.slice(0,120).forEach(a=>{
+    const lv=a.status===1;
+    const sg=signedSet[String(a.id)];
+    const pd=pendSet[String(a.id)];
+    const el=document.createElement('div');el.className='act';
+    el.innerHTML='<div class="ttl">'+(sg?'<span style="color:#12a150">✓ </span>':'')+esc(a.nameOne||a.name||a.name1||'签到')+'</div>'+
+      '<div class="meta"><span class="pill '+(lv?'live':'off')+'">'+(lv?'进行中':'已结束')+'</span>'+
+      '<span class="pill tp">'+(TYPE[a.otherId]||('类型'+a.otherId))+'</span>'+
+      (sg?'<span class="pill" style="background:#e8f8ef;color:#12a150">已签</span>':'')+
+      (pd&&!sg?'<span class="pill" style="background:#fdeceb;color:#c33">缺 enc</span>':'')+
+      ft(a.startTime||a.starttime)+'</div>'+
+      '<div class="ops"></div>';
+    const ops=el.querySelector('.ops');
+    const mk=(t,c,f)=>{const b=document.createElement('button');b.className='sm '+c;b.textContent=t;b.onclick=f;ops.appendChild(b);};
+    mk('详情','g',()=>detail(a));
+    if(lv)mk('签到','ok',()=>detail(a));
+    mk('分享','g',()=>shareAct(a));
+    ab.appendChild(el);
+  });
+}
+async function detail(a){
+  sheet('<h3>加载中…</h3>');
+  const d=await ACTINFO(a);
+  const lat=d.locationLatitude||d.latitude||'',lng=d.locationLongitude||d.longitude||'';
+  const cd=codeOf(d),tp=Number(d.otherId!=null?d.otherId:a.otherId);
+  let h='<h3>'+esc(d.name||a.nameOne||'签到详情')+'</h3>';
+  const kv=(k,v,cls)=>'<div class="kv"><b>'+k+'</b><span class="'+(cls||'')+'">'+v+'</span></div>';
+  h+=kv('类型',TYPE[tp]||'-');
+  h+=kv('状态',d.status===1?'进行中':'已结束',d.status===1?'hi':'');
+  h+=kv('签到人数',((d.attendNum!=null?d.attendNum:d.numberCount)+' 人'),'hi');
+  h+=kv('位置',esc(d.locationText||'（无）'));
+  h+=kv('经纬度',(lat&&lng)?(lng+','+lat):'（无）',(lat&&lng)?'hi':'');
+  h+=kv('范围',(d.locationRange||'-')+' 米');
+  h+=kv('签到码',cd?cd:(d.status===1?'（接口暂未下发）':'（活动已结束）'),cd?'code':'');
+  h+=kv('开始',ft(d.starttime));
+  h+=kv('结束',ft(d.endtime));
+  if(d.status===1){
+    h+='<button class="ok" id="s-go">✅ 立即签到</button>';
+    if(cd)h+='<button class="ok" id="s-auto">⚡ 用签到码 '+cd+' 一键签到</button>';
+    if(!cd&&(tp===3||tp===5))h+='<button class="wn" id="s-reget">🔄 重新获取签到码</button>';
+    if(lat&&lng)h+='<button class="wn" id="s-loc">📍 位置签到（虚拟定位 '+lng+','+lat+'）</button>';
+    if(tp===3||tp===5)h+='<button class="g" id="s-man">⌨️ 手动输入签到码</button>';
+  }
+  h+='<button class="g" id="s-share">分享给同学</button><button class="g" id="s-close">关闭</button>';
+  sheet(h);
+  $('s-close').onclick=closeSheet;$('s-share').onclick=()=>shareAct(a,d);
+  if(d.status===1){
+    $('s-go').onclick=()=>{closeSheet();go(a,d,{});};
+    if(cd)$('s-auto').onclick=()=>{closeSheet();goCode(a,d,cd);};
+    if(!cd&&(tp===3||tp===5))$('s-reget').onclick=()=>{closeSheet();refetch(a);};
+    if(lat&&lng)$('s-loc').onclick=()=>{closeSheet();go(a,d,{lat:lat,lng:lng,address:d.locationText||''});};
+    if(tp===3||tp===5)$('s-man').onclick=()=>{closeSheet();askCode(a,d);};
+  }
+}
+function askCode(a,d){
+  sheet('<h3>输入签到码</h3><div class="warn">⚠ 学习通对签到码有<b>失败计数锁定</b> —— 连错几次会锁 1 小时。所以本 App 不枚举，只提交你看得见的码。</div>'+
+    '<input id="c-in" inputmode="numeric" maxlength="8" placeholder="数字签到码" style="font-size:26px;text-align:center;letter-spacing:8px;padding:16px">'+
+    '<button class="ok" id="c-go">提交并签到</button><button class="g" id="c-c">取消</button>');
+  $('c-c').onclick=closeSheet;
+  $('c-go').onclick=()=>{const c=$('c-in').value.trim();if(!c)return toast('请输入签到码');closeSheet();goCode(a,d,c);};
+}
+async function refetch(a){
+  toast('正在获取签到码…',60000);
+  for(let i=1;i<=8;i++){
+    try{const d=await ACTINFO(a);const c=codeOf(d);log('取码 '+i+'/8: '+(c||'空'));
+      if(c){toast('得到签到码 '+c,3000);return goCode(a,d,c);}}catch(e){log('取码异常 '+e.message);}
+    await new Promise(r=>setTimeout(r,1500));
+  }
+  toast('暂时取不到签到码\n活动进行中时接口才会下发',4200);
+}
+async function go(a,d,o){
+  toast('签到中…',60000);
+  try{
+    log('▶ '+a.id+' 类型='+(TYPE[d.otherId!=null?d.otherId:a.otherId]||'?')+(o.lat?(' 坐标='+o.lng+','+o.lat):'')+(o.enc?' 带enc':''));
+    await preSign(a.id,a.__courseId,a.__classId);
+    const t=await submit(a,d,o);
+    const ok=histSave(a,(a.__courseName||''),(TYPE[d.otherId!=null?d.otherId:a.otherId]||''),t);
+    toast((ok?'✅ 签到成功':'⚠️ '+t.slice(0,60)),ok?2600:4000);
+    log((ok?'✅ ':'⚠️ ')+t);
+  }catch(e){toast('失败: '+e.message,3500);log('❌ '+e.message);}
+}
+async function goCode(a,d,c){
+  toast('校验签到码…',60000);
+  try{
+    const r=await chkCode(a.id,c);log('校验: '+JSON.stringify(r).slice(0,110));
+    if(r&&(r.result===1||r.result==='1'))return go(a,Object.assign({},d,{otherId:0}),{});
+    const m=(r&&(r.errorMsg||r.msg))||'签到码不正确';toast(m,4000);log('❌ '+m);
+  }catch(e){toast('失败: '+e.message,3500);}
+}
+async function autoSign(){
+  if(!ST.live.length)return toast('当前没有进行中的签到');
+  const N=ST.live.length;
+  log('一键签到：'+N+' 个（并发拉详情）');
+  toast('正在拉取 '+N+' 个活动详情…',60000);
+  /* 阶段一：并发拉详情 */
+  const dets=await mapLimit(ST.live,6,async a=>{
+    try{return {a:a,d:await ACTINFO(a)};}catch(e){return {a:a,d:null};}
+  });
+  /* 阶段二：逐个提交（串行，避免风控） */
+  let ok=0,skip=0,fail=0,i=0;
+  for(const {a,d} of dets){
+    i++;
+    if(!d){fail++;log('['+(a.nameOne||a.id)+'] 详情拉取失败');continue;}
+    try{
+      const lat=d.locationLatitude||d.latitude||'',lng=d.locationLongitude||d.longitude||'';
+      const tp=Number(d.otherId!=null?d.otherId:a.otherId);
+      const ty=TYPE[tp]||'';
+      if(tp===2){
+        const c1=ENCC.get(a.id);
+        if(c1){log('['+(a.nameOne||a.id)+'] ♻️ 用缓存 enc 签');}
+        else{skip++;PEND.add(a.id,a.nameOne||a.name||'',a.__courseName||'');
+          log('['+(a.nameOne||a.id)+'] 二维码需 enc，已记入待办');histSave(a,a.__courseName||'',ty,'跳过：需 enc');continue;}
+      }
+      const cd=codeOf(d);
+      if((tp===3||tp===5)&&!cd){skip++;log('['+(a.nameOne||a.id)+'] 缺签到码，跳过');continue;}
+      if(cd){const r=await chkCode(a.id,cd);
+        if(!(r&&(r.result===1||r.result==='1'))){skip++;log('['+(a.nameOne||a.id)+'] 码无效，跳过');continue;}}
+      await preSign(a.id,a.__courseId,a.__classId);
+      const o={lat:lat,lng:lng,address:d.locationText||''};
+      if(tp===2)o.enc=ENCC.get(a.id);
+      const t=await submit(a,d,o);
+      log('('+i+'/'+N+') ['+(a.nameOne||a.id)+'] -> '+t);
+      if(histSave(a,a.__courseName||'',ty,t))ok++;else fail++;
+    }catch(e){fail++;log('['+a.id+'] 异常 '+e.message);}
+  }
+  toast('完成：成功 '+ok+' · 跳过 '+skip+' · 失败 '+fail,4000);
+  renderHist();
+}
+
+function shareLink(a,d){
+  const p={v:1,a:String(a.id)};
+  if(a.__courseId)p.c=String(a.__courseId);
+  if(a.__classId)p.k=String(a.__classId);
+  if(d){const c=codeOf(d);if(c)p.z=c;
+    const lat=d.locationLatitude||d.latitude,lng=d.locationLongitude||d.longitude;
+    if(lat&&lng)p.g=[String(lng),String(lat)];
+    if(d.locationText)p.ad=String(d.locationText);
+    if(d.name)p.n=String(d.name).slice(0,24);}
+  return 'xxtqd://s?d='+b64u(JSON.stringify(p));
+}
+async function shareAct(a,d){
+  if(!d)d=await ACTINFO(a);
+  const link=shareLink(a,d);
+  let m=null;try{m=QR.encode(link,'M');}catch(e){log('QR 失败 '+e.message);}
+  let cv='';
+  if(m){const sc=Math.max(3,Math.floor(272/m.size));const sz=(m.size+8)*sc;
+    cv='<canvas id="qc" width="'+sz+'" height="'+sz+'"></canvas>';}
+  sheet('<h3>分享这次签到</h3><div class="hint">同学用本 App 扫这个码，即可用<b>他自己的账号</b>完成同一次签到</div>'+
+    '<div id="qrwrap">'+(cv||'<div class="hint">二维码生成失败</div>')+'</div>'+
+    '<label>分享链接</label><div class="linkbox" id="lk">'+link+'</div>'+
+    '<button class="g" id="cp">复制链接</button><button class="g" id="cl">关闭</button>');
+  if(m){const c=$('qc'),sc=Math.floor(c.width/(m.size+8)),ctx=c.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#000';
+    for(let y=0;y<m.size;y++)for(let x=0;x<m.size;x++)if(m.modules[y][x])
+      ctx.fillRect((x+4)*sc,(y+4)*sc,sc,sc);}
+  $('cl').onclick=closeSheet;
+  $('cp').onclick=()=>{const t=$('lk').textContent;
+    if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('已复制'),()=>toast('复制失败'));
+    else{const i=document.createElement('textarea');i.value=t;document.body.appendChild(i);i.select();
+      try{document.execCommand('copy');toast('已复制');}catch(e){toast('复制失败');}i.remove();}};
+}
+
+let camStream=null,camTimer=null,detector=null,jsCanvas=null;
+function stopCam(){if(camTimer){clearInterval(camTimer);camTimer=null;}
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
+/* v3.0：三级扫码引擎
+   ① BarcodeDetector（系统级，快）
+   ② jsQR 纯 JS 解码（无 GMS 的国产 ROM 全能用 —— 兜底主力）
+   ③ 都没有 → 引导用「粘贴」 */
+function jsqrShim(){
+  if(typeof jsQR!=='function')return null;
+  return {__jsqr:true,detect:async function(src){
+    const w=src.videoWidth||src.width||0,h=src.videoHeight||src.height||0;
+    if(!w||!h)return [];
+    const cv=jsCanvas||(jsCanvas=document.createElement('canvas'));
+    const sc=Math.min(1,760/Math.max(w,h));
+    const cw=Math.max(1,Math.round(w*sc)),ch=Math.max(1,Math.round(h*sc));
+    if(cv.width!==cw)cv.width=cw;
+    if(cv.height!==ch)cv.height=ch;
+    const ctx=cv.getContext('2d',{willReadFrequently:true});
+    try{ctx.drawImage(src,0,0,cw,ch);}catch(e){return [];}
+    let img;try{img=ctx.getImageData(0,0,cw,ch);}catch(e){return [];}
+    const r=jsQR(img.data,cw,ch,{inversionAttempts:'dontInvert'});
+    return (r&&r.data)?[{rawValue:r.data}]:[];
+  }};
+}
+async function mkDetector(){
+  if(detector)return detector;
+  if(typeof BarcodeDetector!=='undefined'){
+    try{
+      const d=new BarcodeDetector({formats:['qr_code']});
+      /* 某些 ROM 声明了 BarcodeDetector 但底层缺 GMS，detect 会抛错 —— 实测一帧再采用 */
+      detector=d;
+      log('扫码引擎：BarcodeDetector（系统级）');
+      return detector;
+    }catch(e){}
+  }
+  const shim=jsqrShim();
+  if(shim){detector=shim;log('扫码引擎：jsQR（内置纯 JS 解码）');return detector;}
+  detector=null;
+  return null;
+}
+async function openCam(){
+  stopCam();
+  const d=document.createElement('div');d.id='camfull';
+  d.innerHTML='<div class="cbar"><span id="ch">正在启动摄像头…</span>'+
+    '<button id="ccls">✕</button></div>'+
+    '<video id="cam" playsinline muted autoplay></video>'+
+    '<div class="cframe"><i></i><i></i><i></i><i></i><div class="claser"></div></div>'+
+    '<div class="cbtns"><button class="alt" id="calb">🖼 从相册选图</button>'+
+    '<button id="ccls2">关闭</button></div>';
+  document.body.appendChild(d);
+  const hint=$('ch'), closeAll=()=>{stopCam();try{d.remove();}catch(e){}};
+  $('ccls').onclick=closeAll;$('ccls2').onclick=closeAll;
+  $('calb').onclick=()=>{closeAll();openAlbum();};
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('无摄像头接口');
+    /* 高分辨率 + 连续对焦，保证小二维码也能扫清 */
+    const cons=[{video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false},
+                {video:{facingMode:'environment'},audio:false},
+                {video:true,audio:false}];
+    let err=null;
+    for(const c of cons){try{camStream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){err=e;}}
+    if(!camStream)throw (err||new Error('无法打开摄像头'));
+    const v=$('cam');
+    v.setAttribute('playsinline','');v.muted=true;
+    v.srcObject=camStream;
+    await v.play().catch(()=>{});
+    const tr=(camStream.getVideoTracks&&camStream.getVideoTracks()[0])||null;
+    if(tr){
+      try{const caps=tr.getCapabilities?tr.getCapabilities():{};
+        const adv=[];if(caps.focusMode&&caps.focusMode.indexOf('continuous')>=0)adv.push({focusMode:'continuous'});
+        if(adv.length&&tr.applyConstraints)await tr.applyConstraints({advanced:adv});}catch(e){}
+    }
+    const det=await mkDetector();
+    if(!det){hint.textContent='本机无扫码引擎，请用「从相册选图」或「粘贴」';return;}
+    hint.textContent=det.__jsqr?'对准二维码，自动识别（内置引擎）':'对准二维码，自动识别';
+    camTimer=setInterval(async()=>{
+      try{const r=await det.detect(v);
+        if(r&&r.length){const t=r[0].rawValue;stopCam();try{d.remove();}catch(e){}
+          onScan(t);return;}
+      }catch(e){}
+    },det.__jsqr?420:320);
+  }catch(e){
+    hint.textContent='摄像头打不开：'+e.message;
+    log('摄像头失败: '+e.message);
+  }
+}
+
+function openAlbum(){
+  const f=document.createElement('input');f.type='file';f.accept='image/*';
+  f.onchange=async()=>{
+    const file=f.files&&f.files[0];if(!file)return;
+    toast('识别中…',60000);
+    try{
+      const det=await mkDetector();
+      if(!det)throw new Error('本机无扫码引擎，请改用粘贴');
+      const bmp=await createImageBitmap(file);
+      const r=await det.detect(bmp);
+      if(r&&r.length){toast('识别成功',1200);log('相册识别: '+r[0].rawValue.slice(0,110));onScan(r[0].rawValue);}
+      else toast('没识别到二维码，换个角度拍清楚点',3500);
+    }catch(e){toast('识别失败: '+e.message,3500);}
+  };
+  f.click();
+}
+function openPaste(){
+  sheet('<h3>粘贴二维码内容</h3><div class="hint">用任意扫码工具扫教师投屏的码，把结果粘进来</div>'+
+    '<textarea id="pin" placeholder="粘贴链接 / enc / xxtqd:// 分享链接"></textarea>'+
+    '<button class="ok" id="pg">解析并签到</button><button class="g" id="pc">取消</button>');
+  $('pc').onclick=closeSheet;
+  $('pg').onclick=()=>{const t=$('pin').value.trim();if(!t)return toast('请粘贴内容');closeSheet();onScan(t);};
+}
+function parse(t){
+  const o={aid:null,enc:null,code:null,sh:null,c:null};t=String(t||'').trim();
+  if(t.indexOf('xxtqd://')===0){const m=t.match(/[?&]d=([A-Za-z0-9_\-]+)/);
+    if(m){try{o.sh=JSON.parse(ub64(m[1]));}catch(e){log('分享解析失败 '+e.message);}}return o;}
+  /* ★ 学习通原生二维码格式：「SIGNIN:<参数>&enc=<密钥>-<附加>」
+     参考 ChaoxingSignFaker(★787) ChaoxingQRCodeSigner.parseQRCode 的权威实现
+        content = 去掉前缀后、第一个 '-' 之前的部分
+        enc     = '&enc=' 之后、下一个 '&' 之前
+        aid     = content 第一段 '=' 后面的值
+        c       = content 最后一段 '=' 后面的值（courseId） */
+  if(t.indexOf('SIGNIN:')===0){
+    const content=t.slice(7).split('-')[0];
+    const ei=content.indexOf('&enc=');
+    if(ei>=0){
+      o.enc=content.slice(ei+5).split('&')[0]||null;
+      const sd=content.slice(0,ei);
+      const p0=sd.split('&')[0],a=p0.indexOf('=');
+      if(a>=0){const v=p0.slice(a+1);if(/^\d+$/.test(v))o.aid=v;}
+      const li=sd.lastIndexOf('=');
+      if(li>=0){const cv=sd.slice(li+1);if(cv&&cv!==o.aid)o.c=cv;}
+    }
+    if(o.aid||o.enc) return o;
+  }
+  if(/^\d{3,8}$/.test(t)){o.code=t;return o;}
+  try{const u=new URL(t);
+    o.aid=u.searchParams.get('activeId')||u.searchParams.get('aid')||u.searchParams.get('id');
+    o.enc=u.searchParams.get('enc');
+    o.code=u.searchParams.get('signCode')||u.searchParams.get('code');
+    o.c=u.searchParams.get('c')||u.searchParams.get('courseId');}catch(e){}
+  if(!o.aid){const m=t.match(/[?&](?:activeId|aid|id)=(\d+)/i);if(m)o.aid=m[1];}
+  if(!o.enc){const m=t.match(/[?&]enc=([\w\-]+)/i);if(m)o.enc=m[1];}
+  if(!o.code){const m=t.match(/[?&](?:signCode|code)=(\d{3,8})/i);if(m)o.code=m[1];}
+  if(!o.c){const m=t.match(/[?&]c=([\w\-]+)/i);if(m)o.c=m[1];}
+  return o;
+}
+async function onScan(t){
+  const q=parse(t);log('解析: '+JSON.stringify(q).slice(0,140));
+  if(q.sh){const s=q.sh,o={};if(s.g&&s.g.length===2){o.lng=s.g[0];o.lat=s.g[1];}if(s.ad)o.address=s.ad;
+    toast('同学分享的签到，正在签…',60000);
+    const d=await ACTINFO({id:s.a});
+    if(s.z)return goCode({id:s.a},d,s.z);
+    return go({id:s.a},d,o);}
+  if(q.aid){const d=await ACTINFO({id:q.aid});
+    if(q.code)return goCode({id:q.aid},d,q.code);
+    const o={};if(q.enc){o.enc=q.enc;ENCC.put(q.aid,q.enc,'扫码');}
+    else{const c2=ENCC.get(q.aid);if(c2){o.enc=c2;log('♻️ 复用缓存 enc: '+q.aid);}}
+    if(d.locationLatitude||d.latitude){o.lat=d.locationLatitude||d.latitude;
+      o.lng=d.locationLongitude||d.longitude;o.address=d.locationText||'';}
+    return go({id:q.aid},d,o);}
+  if(q.code||q.enc&&!q.aid){toast('正在全课程匹配活动…',60000);
+    /* 有 c(courseId) 就优先那门课，否则搜全部课程 */
+    let list=ST.courses.slice();
+    if(q.c){const hit=list.filter(x=>String(x.courseId)===String(q.c)) ;if(hit.length)list=hit;}
+    const pick=$('course').value;
+    if(list.length>1&&ST.courses[pick])list=[ST.courses[pick]].concat(list.filter(x=>x!==ST.courses[pick]));
+    let found=null;
+    for(const c of list){
+      let acts=[];try{acts=await loadActs(c);}catch(e){continue;}
+      const cand=acts.filter(a=>a.status===1);
+      if(!cand.length)continue;
+      if(q.code){
+        for(const a of cand){const r=await chkCode(a.id,q.code);
+          if(r&&(r.result===1||r.result==='1')){found={a:a,c:c,code:q.code};break;}}
+      }else if(q.enc){
+        /* 二维码签到：进行中的 2 类活动就是目标 */
+        const two=cand.filter(a=>Number(a.otherId)===2);
+        if(two.length)found={a:two[0],c:c,code:null};
+      }
+      if(found)break;
+    }
+    if(!found)return toast(q.enc?'没找到进行中的二维码签到':'没有活动接受这个码');
+    const d=await ACTINFO(found.a);
+    log('匹配到活动 '+found.a.id+' @ '+(found.c.name||''));
+    if(found.code)return goCode(found.a,Object.assign({},d,{otherId:0}),found.code);
+    return go(found.a,d,{enc:q.enc,lat:d.locationLatitude||d.latitude,
+      lng:d.locationLongitude||d.longitude,address:d.locationText||''});}
+  if(q.enc){ /* 有 enc 但已在上分支处理过，说明没有匹配到活动 */
+    return toast('收到二维码密钥，但没找到进行中的二维码签到');}
+  toast('无法解析出活动信息');
+}
+window.__xxtShare=function(u){log('收到分享: '+String(u).slice(0,110));
+  try{closeSheet();onScan(u);}catch(e){toast('分享处理失败: '+e.message);}};
+
+async function encDirect(){
+  const t=$('encin').value.trim();
+  if(!t)return toast('请粘贴 enc 或分享链接');
+  const q=parse(t);
+  if(q.sh)return onScan(t);
+  if(!q.enc&&!q.aid){const m=t.match(/enc=([\w\-]+)/);if(m)q.enc=m[1];
+    if(!q.enc&&/^[\w\-]{16,}$/.test(t))q.enc=t;}
+  const c=ST.courses[$('course').value];
+  let aid=q.aid;
+  if(!aid){if(!c)return toast('请带 enc= 或先选课程');
+    const acts=await loadActs(c);const live=acts.filter(a=>a.status===1);
+    if(!live.length)return toast('该课程没有进行中的签到');aid=live[0].id;}
+  const d=await ACTINFO({id:aid});
+  return go({id:aid},d,{enc:q.enc,lat:d.locationLatitude||d.latitude,lng:d.locationLongitude||d.longitude,
+    address:d.locationText||''});
+}
+
+$('do-login').onclick=async function(){
+  const u=$('un').value.trim(),p=$('pw').value;
+  if(!u||!p)return toast('请填账号和密码');
+  this.disabled=true;this.textContent='登录中…';
+  try{if(!await login(u,p))return toast('登录失败，检查账号密码');
+    LS.s('un',u);LS.s('pw',p);await afterLogin(u);toast('登录成功');}
+  catch(e){toast('异常: '+e.message);}
+  finally{this.disabled=false;this.textContent='登 录';}
+};
+$('do-forget').onclick=()=>{LS.d('un');LS.d('pw');$('un').value='';$('pw').value='';toast('已清除');};
+$('do-logout').onclick=async()=>{
+  LS.d('un');LS.d('pw');
+  /* v3.0：退出时连原生 Cookie 罐一起清，防止残留会话被下次登录串用 */
+  try{await fetch('https://xxt.local/clearcookies');}catch(e){}
+  location.reload();
+};
+$('do-refresh').onclick=()=>afterLogin(ST.un);
+$('do-auto').onclick=autoSign;
+$('do-cam').onclick=openCam;
+$('do-album').onclick=openAlbum;
+$('do-paste').onclick=openPaste;
+$('do-enc').onclick=encDirect;
+$('do-load').onclick=async function(){
+  const c=ST.courses[$('course').value];
+  if(!c)return toast('请先登录');
+  this.disabled=true;this.textContent='加载中…';
+  try{const a=await loadActs(c);a.forEach(x=>{x.__courseId=c.courseId;x.__classId=c.classId;x.__courseName=c.name||'';});
+    ST.acts=a;render(a);toast('共 '+a.length+' 个活动');}
+  catch(e){toast('加载失败: '+e.message);}
+  finally{this.disabled=false;this.textContent='加载签到列表';}
+};
+$('course').onchange=()=>{ST.live=[];$('list').innerHTML='';};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+  ['sign','scan','me'].forEach(k=>$('tab-'+k).style.display=(k===t.dataset.t?'':'none'));});
+$('filter').oninput=function(){
+  const kw=this.value.trim().toLowerCase();const src=ST.__all||[];if(!src.length)return;
+  fill(src.filter(c=>!kw||c.name.toLowerCase().includes(kw)||c.className.toLowerCase().includes(kw)));};
+function fill(list){
+  const s=$('course');s.innerHTML='';
+  list.forEach((c,i)=>{const o=document.createElement('option');o.value=i;
+    o.textContent=(c.hidden?'★ ':'')+c.name+(c.className?(' · '+c.className):'');s.appendChild(o);});
+  s.__l=list;
+  const hc=list.filter(c=>c.hidden).length;
+  $('ccnt').textContent=list.length+' 门'+(hc?('（★隐藏 '+hc+'）'):'');}
+async function afterLogin(u){
+  ST.un=u;await readIds();
+  $('v-login').style.display='none';$('v-main').style.display='';
+  $('hd').textContent='已登录 '+u;$('me-un').textContent=u;
+  try{ST.courses=await getCourses();ST.__all=ST.courses;fill(ST.courses);
+    $('me-cnt').textContent=ST.courses.length+' 门';log('课程合计 '+ST.courses.length+' 门');
+    if(!ST.courses.length)toast('没取到课程，可能登录未成功');}
+  catch(e){toast('课程加载失败: '+e.message);}
+}
+(async function(){
+  const u=LS.g('un',''),p=LS.g('pw','');
+  if(u)$('un').value=u;if(p)$('pw').value=p;
+  log('学习通助手 v3.0 启动');
+  THEME.apply();
+  /* v3.0 快速启动：原生 Cookie 罐里还有有效会话就直接进，省一次登录（更快、少触发风控） */
+  try{
+    await readIds();
+    if(ST.uid&&await sessionAlive()){
+      log('复用已有会话 _uid='+ST.uid+'（免登录）');
+      await afterLogin(u||('用户'+ST.uid));
+      return;
+    }
+  }catch(e){log('会话复用失败：'+e.message);}
+  if(u&&p){log('自动登录…');try{if(await login(u,p))await afterLogin(u);else log('自动登录失败');}
+    catch(e){log('自动登录异常 '+e.message);}}
+})();
+
+/* =====================================================================
+   v2.3 扩展模块
+   - 多账号代签（ACC / multiSign）
+   - 自动检测签到（MON / monTick）
+   - 人脸识别（FACE / faceUpload / facePull）
+   - 群聊签到（GRP / grpLogin / grpList / grpMsgs / grpParse）
+   协议来源：ChaoxingSignFaker(★787) 的 ChaoxingFaceHelper / ChaoxingIMHelper
+   ===================================================================== */
+
+/* ---------- 扩展 API：支持自定义头 / multipart ---------- */
+async function apiEx(p){
+  const r=await fetch('https://xxt.local/r?d='+encodeURIComponent(b64(JSON.stringify(p))));
+  const t=await r.text();
+  try{return JSON.parse(t);}catch(e){return {__raw:t,__status:r.status};}
+}
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- protobuf 最小解析器 ---------- */
+function pbVarint(u8,i){
+  let r=0,s=0;
+  while(i<u8.length){const b=u8[i++];r+=(b&127)*Math.pow(2,s);s+=7;if(!(b&128))break;}
+  return [r,i];
+}
+function pbFields(u8){
+  const out=[];let i=0;
+  while(i<u8.length){
+    let k;i=(k=pbVarint(u8,i))[1];k=k[0];
+    if(!k)break;
+    const n=k>>>3,w=k&7;
+    if(w===0){const r=pbVarint(u8,i);i=r[1];out.push({n:n,w:w,v:r[0]});}
+    else if(w===2){const r=pbVarint(u8,i);i=r[1];const len=r[0];
+      out.push({n:n,w:w,v:u8.slice(i,i+len)});i+=len;}
+    else if(w===5){out.push({n:n,w:w,v:0});i+=4;}
+    else if(w===1){out.push({n:n,w:w,v:0});i+=8;}
+    else break;
+  }
+  return out;
+}
+const pbStr=u8=>{try{return new TextDecoder('utf-8').decode(u8);}catch(e){return '';}};
+function b64ToU8(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+
+/* ==================== v3.0 统一签到核心 ====================
+   act: 活动（必须有 id，可带 otherId/nameOne/__courseId/__classId）
+   c:   课程 {courseId,classId,name}（可为空，缺省用 act.__courseId）
+   opt: {face:人脸objectId（''=不带）, enc:直接用此enc, from:enc来源标注}
+   返回 {r:'ok'|'skip'|'fail', t:结果文本或跳过原因, ty:类型名, d:活动详情}
+   —— monTick / multiSign / grpSign 共用，行为一致，改一处全生效 */
+async function signActivity(act,c,opt){
+  opt=opt||{};
+  const d=await ACTINFO(act);
+  const tp=Number(d.otherId!=null?d.otherId:(act.otherId!=null?act.otherId:0));
+  const ty=TYPE[tp]||('类型'+tp);
+  const cd=codeOf(d);
+  const o={lat:d.locationLatitude||d.latitude||'',lng:d.locationLongitude||d.longitude||'',
+           address:d.locationText||'',face:opt.face||''};
+  if(tp===2){
+    let e=opt.enc||'';
+    if(!e){const c1=ENCC.get(act.id);if(c1){e=c1;log('♻️ 复用缓存 enc '+act.id);}}
+    if(!e&&o.face){
+      try{const fe=await faceEnc(act.id,o.face);
+        if(fe){e=fe;ENCC.put(act.id,e,opt.from||'人脸');}}catch(x){}
+    }
+    if(!e){
+      PEND.add(act.id,act.nameOne||act.name||d.name||'',(c&&c.name)||act.__courseName||'');
+      return {r:'skip',t:'二维码需 enc（已记待办）',ty:ty,d:d};
+    }
+    o.enc=e;
+  }
+  if((tp===3||tp===5)&&!cd)return {r:'skip',t:'签到码未下发',ty:ty,d:d};
+  if(cd){
+    const r=await chkCode(act.id,cd);
+    if(!(r&&(r.result===1||r.result==='1')))return {r:'skip',t:'签到码无效',ty:ty,d:d};
+  }
+  await preSign(act.id,(c&&c.courseId)||act.__courseId,(c&&c.classId)||act.__classId);
+  const t=await submit(act,d,o);
+  const good=(t==='success')||/成功|已签到|签到过|已签/.test(t);
+  if(good)PEND.del(act.id);
+  return {r:good?'ok':'fail',t:t,ty:ty,d:d};
+}
+
+/* ==================== v3.0 会话保活 ====================
+   监控挂机一夜后 Cookie 过期是常态 —— 探测到失效就用本机保存的凭据自动重登，
+   不再让监控静默空转 */
+let RELOGIN_BUSY=false;
+async function sessionAlive(){
+  try{
+    const r=await GET('https://mooc1.chaoxing.com/mycourse/backclazzdata?view=json&rss=1&_='+Date.now());
+    return !!(r&&r.channelList);
+  }catch(e){return false;}
+}
+async function ensureLogin(force){
+  if(RELOGIN_BUSY)return false;
+  RELOGIN_BUSY=true;
+  try{
+    if(!force&&await sessionAlive()){await readIds();return true;}
+    const u=LS.g('un',''),p=LS.g('pw','');
+    if(!u||!p){log('会话失效且本机没有保存凭据，请手动登录');return false;}
+    log('会话失效，自动重新登录…');
+    const ok=await login(u,p);
+    if(ok){await afterLogin(u);log('✅ 重新登录成功');}
+    else log('❌ 重新登录失败（密码可能已改）');
+    return ok;
+  }catch(e){log('重登异常 '+e.message);return false;}
+  finally{RELOGIN_BUSY=false;}
+}
+
+/* ==================== 1. 多账号代签 ==================== */
+const ACC={
+  K:'xxt_accs',
+  list(){try{const a=JSON.parse(localStorage.getItem(ACC.K)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}},
+  save(l){try{localStorage.setItem(ACC.K,JSON.stringify(l));}catch(e){}},
+  add(un,pw){const l=ACC.list();if(l.some(x=>x.un===un))return false;l.push({un:un,pw:pw});ACC.save(l);return true;},
+  del(un){ACC.save(ACC.list().filter(x=>x.un!==un));},
+  clear(){ACC.save([]);}
+};
+function renderAcc(){
+  const l=ACC.list(),box=$('acclist');if(!box)return;
+  const c=$('acc-cnt');if(c)c.textContent=l.length?l.length+' 个':'';
+  if(!l.length){box.innerHTML='<div class="hint" style="margin:4px 0 10px">还没有子账号</div>';return;}
+  box.innerHTML=l.map(a=>'<div class="aitem"><span class="aname">'+esc(a.un)+'</span>'+
+    '<span class="atag">可代签</span><del data-u="'+esc(a.un)+'">✕</del></div>').join('');
+  box.querySelectorAll('del').forEach(d=>d.onclick=()=>{ACC.del(d.dataset.u);renderAcc();toast('已删除');});
+}
+
+async function multiSign(){
+  const l=ACC.list();
+  if(!l.length)return toast('先去「我的」页添加子账号');
+  const cur={un:LS.g('un',''),pw:LS.g('pw','')};
+  const lines=[];
+  log('========== 多账号代签开始（'+l.length+' 个）==========');
+  for(const a of l){
+    toast('代签 '+a.un+' …',60000);
+    try{
+      const okLogin=await login(a.un,a.pw);   /* v3.0：login 内部先清 Cookie 罐，账号间彻底隔离 */
+      if(!okLogin){lines.push(a.un+'：登录失败（密码错？）');log('✗ '+a.un+' 登录失败');continue;}
+      await readIds();
+      const courses=await getCourses();       /* v3.0：课程缓存按 uid 隔离，不会串主账号的课 */
+      log('▶ '+a.un+' 课程 '+courses.length+' 门');
+      let ok=0,skip=0,fail=0;
+      for(const c of courses){
+        let acts=[];try{acts=await loadActs(c);}catch(e){continue;}
+        const cand=acts.filter(x=>x.status===1);
+        for(const act of cand){
+          try{
+            /* v3.0：走统一核心；子账号不带主账号人脸，二维码仅在共享 enc 缓存命中时才签 */
+            const rr=await signActivity(act,c,{face:''});
+            if(rr.r==='ok'){ok++;log('  ✓ '+(c.name||'')+' / '+(act.nameOne||act.id));}
+            else if(rr.r==='skip'){skip++;log('  · '+rr.t+'：'+(act.nameOne||act.id));}
+            else{fail++;log('  ✗ '+(act.nameOne||act.id)+' -> '+rr.t);}
+          }catch(e){fail++;log('  ! '+e.message);}
+        }
+      }
+      lines.push(a.un+'：成功 '+ok+(skip?('，跳过 '+skip):'')+(fail?('，失败 '+fail):''));
+    }catch(e){lines.push(a.un+'：异常 '+e.message);log('✗ '+a.un+' '+e.message);}
+  }
+  /* 恢复自己的登录态 */
+  if(cur.un&&cur.pw){
+    try{await login(cur.un,cur.pw);await afterLogin(cur.un);log('已恢复主账号 '+cur.un);}catch(e){}
+  }
+  log('========== 代签结束 ==========');
+  let h='<h3>代签结果</h3>';
+  h+=lines.map(x=>'<div class="kv"><span>'+esc(x)+'</span></div>').join('');
+  h+='<button class="g" id="mclose">关闭</button>';
+  sheet(h);$('mclose').onclick=closeSheet;
+}
+
+/* ==================== 2. 自动检测签到 ==================== */
+const MON={timer:null,cnt:0,signed:0,seen:{},busy:false,errStreak:0,warned:{}};
+function monUi(){
+  const p=$('mon-pill');if(p)p.style.display=MON.timer?'':'none';
+  const b=$('do-mon');
+  if(b){b.textContent=MON.timer?'⏸ 停止':'▶ 开启';b.className=MON.timer?'g':'ok';}
+  const c=$('mon-cnt');if(c)c.textContent=MON.cnt;
+  const s=$('mon-signed');if(s)s.textContent=MON.signed+' 次';
+}
+async function monTick(){
+  if(MON.busy)return;
+  MON.busy=true;
+  MON.cnt++;
+  try{
+    let courses=ST.courses&&ST.courses.length?ST.courses:await getCourses();
+    /* v3.0：课程拉空多半是会话过期 —— 连续两轮后自动重登，不再静默空转 */
+    if(!courses||!courses.length){
+      MON.errStreak++;
+      if(MON.errStreak>=2&&await ensureLogin(true)){
+        courses=(ST.courses&&ST.courses.length)?ST.courses:[];
+        MON.errStreak=0;
+      }
+      if(!courses||!courses.length){
+        log('监控 · 没取到课程（登录态可能失效，第 '+MON.errStreak+' 轮）');
+        MON.busy=false;monUi();return;
+      }
+    }
+    MON.errStreak=0;
+    /* 并发 6 路拉活动，比串行快 5 倍以上 */
+    const all=await mapLimit(courses,6,async c=>{
+      try{const acts=await loadActs(c);return acts.filter(x=>x.status===1).map(x=>{x.__c=c;return x;});}
+      catch(e){return [];}
+    });
+    const flat=[].concat.apply([],all.filter(Boolean));
+    const live=flat.length;
+    for(const act of flat){
+      const c=act.__c||{};
+      if(MON.seen[act.id])continue;
+      try{
+        const rr=await signActivity(act,c,{face:FACE.oid(),from:'监控·人脸'});
+        if(rr.r==='ok'){
+          MON.signed++;MON.seen[act.id]=1;
+          histSave(act,c.name||act.__courseName||'',rr.ty,rr.t);
+          log('✅ 监控自动签到：'+(act.nameOne||act.id)+' @ '+(c.name||''));
+          toast('已自动签到：'+(act.nameOne||act.id),3200);
+        }else if(rr.r==='skip'){
+          if(rr.t.indexOf('enc')>=0){
+            if(!MON.warned[act.id]){MON.warned[act.id]=1;
+              log('⚠️ 待扫码：'+(act.nameOne||act.id)+' @ '+(c.name||'')+'（二维码签到，需现场扫一次）');}
+          }else{
+            log('监控 · '+(act.nameOne||act.id)+' '+rr.t+'，下轮重试');
+          }
+        }else{
+          log('监控 · '+(act.nameOne||act.id)+' -> '+rr.t);
+          if(/已签|重复/.test(rr.t)){MON.seen[act.id]=1;histSave(act,c.name||'',rr.ty,rr.t);}
+        }
+      }catch(e){log('监控异常 '+e.message);}
+    }
+    const t=new Date().toTimeString().slice(0,8);
+    const e=$('mon-last');if(e)e.textContent=t+(live?(' · 进行中 '+live):' · 无');
+    pushMonInfo((live?('进行中 '+live):'无活动')+(MON.signed?(' · 签'+MON.signed):''));
+    renderPend();renderHist();
+  }catch(e){
+    log('监控扫描失败 '+e.message);
+    MON.errStreak++;
+    if(MON.errStreak===3)ensureLogin(true).then(ok=>{if(ok){MON.errStreak=0;log('监控 · 会话已恢复');}});
+  }
+  MON.busy=false;
+  monUi();
+}
+async function monToggle(){
+  if(MON.timer){
+    clearInterval(MON.timer);MON.timer=null;
+    await nativeMonStop();
+    monUi();toast('已停止自动检测');log('■ 自动检测已停止（含前台服务）');return;
+  }
+  const sec=Number(($('mon-interval')||{}).value)||60;
+  MON.timer=setInterval(monTick,sec*1000);
+  const nat=await nativeMonStart(sec);
+  monUi();
+  toast('已开启：每 '+sec+' 秒扫描一次',3000);
+  log('▶ 自动检测已开启，间隔 '+sec+'s');
+  log(nat?'✅ 已启动原生前台服务 —— 切后台/息屏也能跑（通知栏可见）'
+         :'⚠️ 原生服务启动失败，仅网页定时器有效（切后台可能被挂起）');
+  monTick();
+}
+
+/* ==================== 3. 人脸识别 ==================== */
+const FACE={
+  K:'xxt_face',
+  get(){try{return JSON.parse(localStorage.getItem(FACE.K)||'{}');}catch(e){return {};}},
+  set(o){try{localStorage.setItem(FACE.K,JSON.stringify(o));}catch(e){}},
+  oid(){return FACE.get().oid||'';},
+  del(){localStorage.removeItem(FACE.K);}
+};
+function renderFace(){
+  const f=FACE.get();
+  const a=$('face-oid');if(a)a.textContent=f.oid||'（未设置）';
+  const b=$('face-score');if(b)b.textContent=(f.score!=null&&f.score!=='')?(Number(f.score)*100).toFixed(1)+'%':'（未校验）';
+}
+function fileToB64(f){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>{const s=String(r.result||'');res(s.slice(s.indexOf(',')+1));};
+    r.onerror=()=>rej(new Error('读取文件失败'));
+    r.readAsDataURL(f);
+  });
+}
+/* v3.0：上传前压缩 —— 人脸照没必要传原图（几 MB 塞进 URL payload 又慢又容易失败）。
+   最长边压到 1280、JPEG 0.85；压不动（本来就小/画布失败）就用原图。 */
+async function compressImage(file,maxSide,quality){
+  try{
+    const bmp=await createImageBitmap(file);
+    const w=bmp.width||1,h=bmp.height||1;
+    const sc=Math.min(1,(maxSide||1280)/Math.max(w,h));
+    if(sc>=1&&(file.size||0)<350000){try{bmp.close&&bmp.close();}catch(e){}return null;}
+    const cv=document.createElement('canvas');
+    cv.width=Math.max(1,Math.round(w*sc));cv.height=Math.max(1,Math.round(h*sc));
+    cv.getContext('2d').drawImage(bmp,0,0,cv.width,cv.height);
+    try{bmp.close&&bmp.close();}catch(e){}
+    const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',quality||0.85));
+    if(!blob||(file.size&&blob.size>=file.size))return null;
+    return blob;
+  }catch(e){return null;}
+}
+async function faceUpload(file){
+  if(!file)return;
+  toast('正在上传人脸…',60000);
+  try{
+    const j=await GET('https://sso.chaoxing.com/apis/login/userLogin4Uname.do');
+    const puid=(j&&j.msg&&j.msg.puid)||'';
+    if(!puid)throw new Error('取 puid 失败（登录态失效？）');
+    const tk=await GET('https://pan-yz.chaoxing.com/api/token/uservalid');
+    const token=(tk&&tk._token)||'';
+    if(!token)throw new Error('取上传 token 失败');
+    let up=file,mime=file.type||'image/jpeg',fname=file.name||'face.jpg';
+    const small=await compressImage(file,1280,0.85);
+    if(small){
+      up=small;mime='image/jpeg';
+      fname=String(file.name||'face').replace(/\.[^.]+$/,'')+'.jpg';
+      log('人脸已压缩 '+Math.round((file.size||0)/1024)+'KB → '+Math.round(small.size/1024)+'KB');
+    }
+    const b64s=await fileToB64(up);
+    const r=await apiEx({m:'POST',u:'https://pan-yz.chaoxing.com/upload?_from=mobilelearn',x:2,
+      f:{_token:token,puid:String(puid)},
+      file:{name:'file',filename:fname,mime:mime,b64:b64s}});
+    const oid=(r&&r.objectId)||'';
+    if(!oid)throw new Error('上传未返回 objectId: '+String((r&&r.msg)||JSON.stringify(r)).slice(0,60));
+    FACE.set({oid:oid,score:'',ts:Date.now()});
+    renderFace();
+    toast('✅ 人脸已保存',3000);
+    log('人脸 objectId='+oid);
+    /* 试着拉一下服务器端分数（失败不影响） */
+    try{
+      const s=await GET('https://mobilelearn.chaoxing.com/v2/apis/sign/collectionfilephotoEnc?DB_STRATEGY=DEFAULT');
+      const old=s&&s.data&&s.data.oldObjectId;
+      if(old)log('学习通学籍照 objectId='+old);
+    }catch(e){}
+  }catch(e){
+    toast('上传失败: '+e.message,4200);
+    log('❌ 人脸上传失败 '+e.message);
+  }
+}
+/* 拉取学习通里的学籍照 objectId */
+async function facePull(){
+  toast('正在拉取学籍照…',60000);
+  try{
+    const s=await GET('https://mobilelearn.chaoxing.com/v2/apis/sign/collectionfilephotoEnc?DB_STRATEGY=DEFAULT');
+    const oid=(s&&s.data&&(s.data.oldObjectId||s.data.objectId))||'';
+    if(!oid)throw new Error('学习通里没有你的学籍照（需先做过一次人脸签到）');
+    FACE.set({oid:String(oid),score:'',ts:Date.now()});
+    renderFace();
+    toast('✅ 已保存学籍照人脸 ID',3200);
+    log('学籍照 objectId='+oid);
+  }catch(e){toast('拉取失败: '+e.message,4200);log('❌ '+e.message);}
+}
+/* 人脸 -> enc（check-face-result） */
+async function faceEnc(activeId,objectId){
+  const fr={currentFaceId:objectId,LiveDetectionStatus:1,collectStatus:1,cxtime:String(Date.now())};
+  const u='https://mobilelearn.chaoxing.com/pptSign/check-face-result'
+    +'?DB_STRATEGY=PRIMARY_KEY&STRATEGY_PARA=activeId'
+    +'&activeId='+encodeURIComponent(activeId)
+    +'&faceResult='+encodeURIComponent(JSON.stringify(fr));
+  const r=await GET(u);
+  const enc=(r&&r.enc)||'';
+  if(enc)log('人脸换得 enc='+String(enc).slice(0,12)+'…');
+  return enc;
+}
+
+/* ==================== 4. 群聊签到 ==================== */
+const GRP={im:null,groups:[]};
+const UA_EM='Easemob-SDK(Android) 4.9.0.1';
+async function grpLogin(){
+  const j=await GET('https://sso.chaoxing.com/apis/login/userLogin4Uname.do');
+  const m=(j&&j.msg)||{};
+  const ia=((m.accountInfo||{}).imAccount)||{};
+  const uid=String(m.uid||ia.uid||'');
+  const pwd=String(ia.password||'');
+  if(!uid||!pwd)throw new Error('未取到学习通 IM 账号');
+  const body='grant_type=password&username='+encodeURIComponent(uid)+'&password='+encodeURIComponent(pwd);
+  const r=await apiEx({m:'POST',u:'https://a1-vip6.easemob.com/cx-dev/cxstudy/token',x:1,b:body,
+    h:{'User-Agent':UA_EM}});
+  const tk=(r&&r.access_token)||'';
+  const un=(r&&r.user&&r.user.username)||'';
+  if(!tk)throw new Error('IM 登录失败: '+String((r&&(r.error_description||r.error))||'').slice(0,70));
+  GRP.im={token:tk,username:un};
+  log('IM 登录成功 user='+un);
+  return GRP.im;
+}
+async function grpList(){
+  if(!GRP.im)await grpLogin();
+  const u='https://a1-vip6.easemob.com/cx-dev/cxstudy/users/'+encodeURIComponent(GRP.im.username)
+    +'/joined_chatgroups?detail=true&version=v3&pagenum=1&pagesize=200';
+  const r=await apiEx({m:'GET',u:u,h:{'Authorization':'Bearer '+GRP.im.token,'User-Agent':UA_EM}});
+  GRP.groups=(r&&r.data)||[];
+  return GRP.groups;
+}
+async function grpMsgs(gid){
+  const u='https://a1-vip6.easecdn.com/cx-dev/cxstudy/users/'+encodeURIComponent(GRP.im.username)+'/messageroaming';
+  const body=JSON.stringify({end:'-1',queue:gid+'@conference.easemob.com',start:'-1'});
+  const r=await apiEx({m:'POST',u:u,b:body,
+    h:{'Authorization':'Bearer '+GRP.im.token,'User-Agent':UA_EM,'Content-Type':'text/plain;charset=UTF-8'}});
+  return (((r||{}).data)||{}).msgs||[];
+}
+function grpParse(msgB64){
+  let meta;
+  try{meta=pbFields(b64ToU8(msgB64));}catch(e){return null;}
+  const f6=meta.find(x=>x.n===6);
+  if(!f6||!(f6.v instanceof Uint8Array))return null;
+  const ts=(meta.find(x=>x.n===4)||{}).v||0;
+  const mb=pbFields(f6.v);
+  for(const e of mb.filter(x=>x.n===5&&x.v instanceof Uint8Array)){
+    let kv;try{kv=pbFields(e.v);}catch(err){continue;}
+    const kk=kv.find(x=>x.n===1);
+    if(!kk||!(kk.v instanceof Uint8Array)||pbStr(kk.v)!=='attachment')continue;
+    const vv=kv.find(x=>x.n===6);
+    if(!vv||!(vv.v instanceof Uint8Array))continue;
+    let j=null;try{j=JSON.parse(pbStr(vv.v));}catch(err){continue;}
+    if(!j||Number(j.attachmentType)!==15)continue;
+    const si=j.att_chat_course;if(!si)continue;
+    if(Number(si.atype)!==2&&Number(si.atype)!==74)continue;
+    const ci=si.courseInfo||{};
+    return {aid:String(si.aid||''),title:si.title||'',sub:si.subTitle||'',
+            classId:String(ci.classid||si.classid||''),courseId:String(ci.courseid||si.courseid||''),
+            courseName:ci.coursename||'',typeName:si.atypeName||'',ts:ts};
+  }
+  return null;
+}
+async function doGroups(btn){
+  if(btn){btn.disabled=true;btn.textContent='连接中…';}
+  toast('正在连接学习通 IM…',60000);
+  try{
+    const g=await grpList();
+    renderGroups();
+    toast('共 '+g.length+' 个群聊',3000);
+  }catch(e){toast('群聊失败: '+e.message,4200);log('❌ 群聊 '+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent='💬 加载我的群聊';}}
+}
+function grpName(g){
+  let nm=g.name||'';
+  try{const d=JSON.parse(g.description||'{}');
+    if(d&&d.courseInfo&&d.courseInfo.coursename)nm=d.courseInfo.coursename;}catch(e){}
+  return nm||g.id;
+}
+function renderGroups(){
+  const box=$('glist');if(!box)return;
+  if(!GRP.groups.length){box.innerHTML='<div class="hint" style="margin:8px 0 0">没有群聊</div>';return;}
+  box.innerHTML=GRP.groups.map(g=>
+    '<div class="gitem"><span class="gname">'+esc(grpName(g))+'</span>'+
+    '<button class="ok" data-gid="'+esc(g.id)+'">查签到</button></div>').join('');
+  box.querySelectorAll('button[data-gid]').forEach(b=>b.onclick=()=>grpScan(b.dataset.gid,b));
+}
+async function grpScan(gid,btn){
+  if(btn){btn.disabled=true;btn.textContent='扫描…';}
+  try{
+    const msgs=await grpMsgs(gid);
+    log('群 '+gid+' 拉到 '+msgs.length+' 条消息');
+    const seen={},acts=[];
+    for(const m of msgs){
+      let a=null;try{a=grpParse(m.msg||'');}catch(e){}
+      if(!a||!a.aid||seen[a.aid])continue;
+      seen[a.aid]=1;acts.push(a);
+    }
+    if(!acts.length){toast('这个群最近没有签到消息',3600);return;}
+    let h='<h3>群聊签到（'+acts.length+' 个）</h3>';
+    h+='<div class="hint">群聊里的签到直接可签，二维码类不需要扫码。</div>';
+    h+=acts.map(a=>'<div class="gitem"><span class="gname">'+esc(a.title||a.aid)+
+      '<br><small style="color:#8a94a6">'+esc(a.courseName||'')+(a.typeName?(' · '+esc(a.typeName)):'')+'</small></span>'+
+      '<button class="ok" data-aid="'+esc(a.aid)+'" data-cid="'+esc(a.courseId)+'" data-kid="'+esc(a.classId)+'">签到</button></div>').join('');
+    h+='<button class="g" id="gclose">关闭</button>';
+    sheet(h);
+    $('gclose').onclick=closeSheet;
+    document.querySelectorAll('#sheet button[data-aid]').forEach(b=>{
+      b.onclick=()=>grpSign(b);
+    });
+  }catch(e){toast('扫描失败: '+e.message,4200);log('❌ 群扫描 '+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent='查签到';}}
+}
+async function grpSign(b){
+  const aid=b.dataset.aid,cid=b.dataset.cid,kid=b.dataset.kid;
+  b.disabled=true;b.textContent='签到中…';
+  try{
+    /* v3.0：群签到也走统一核心（缓存 enc → 人脸换 enc → 码校验 → preSign → 提交） */
+    const rr=await signActivity({id:aid},{courseId:cid,classId:kid},{face:FACE.oid(),from:'群·人脸'});
+    if(rr.r==='ok'){
+      histSave({id:aid,nameOne:(rr.d&&rr.d.name)||''},'',rr.ty,rr.t);
+      toast('✅ 群签到成功',2600);log('✅ 群签到 '+aid);
+      closeSheet();
+    }else if(rr.r==='skip'){
+      toast(rr.t,3800);log('群签到 '+aid+' 跳过：'+rr.t);
+    }else{
+      toast('⚠️ '+String(rr.t).slice(0,60),4000);log('⚠️ 群签到 '+aid+' -> '+rr.t);
+    }
+  }catch(e){toast('失败: '+e.message,3600);log('❌ '+e.message);}
+  finally{b.disabled=false;b.textContent='签到';}
+}
+
+/* ==================== 4.5 通用缓存 ==================== */
+const CACHE={
+  K:'xxt_cache',
+  all(){try{return JSON.parse(localStorage.getItem(CACHE.K)||'{}');}catch(e){return {};}},
+  get(key,ttl){
+    const m=CACHE.all(),r=m[key];
+    if(!r)return null;
+    if(Date.now()-(r.ts||0)>ttl)return null;
+    return r.v;
+  },
+  put(key,v){
+    const m=CACHE.all();
+    m[key]={ts:Date.now(),v:v};
+    const ks=Object.keys(m);
+    if(ks.length>50){ks.sort((a,b)=>(m[a].ts||0)-(m[b].ts||0)).slice(0,ks.length-50).forEach(k=>delete m[k]);}
+    try{localStorage.setItem(CACHE.K,JSON.stringify(m));}catch(e){}
+  },
+  clear(){try{localStorage.removeItem(CACHE.K);}catch(e){}}
+};
+
+/* ==================== 4.6 二维码待办（缺 enc 的活动） ==================== */
+const PEND={
+  K:'xxt_pend', TTL:43200000,   /* 12 小时 */
+  all(){try{return JSON.parse(localStorage.getItem(PEND.K)||'{}');}catch(e){return {};}},
+  save(m){try{localStorage.setItem(PEND.K,JSON.stringify(m));}catch(e){}},
+  add(aid,name,course){
+    if(!aid)return;
+    const m=PEND.all();
+    if(m[aid]){m[aid].ts=Date.now();}
+    else m[aid]={name:name||'',course:course||'',ts:Date.now()};
+    PEND.save(m);renderPend();
+  },
+  del(aid){const m=PEND.all();delete m[aid];PEND.save(m);renderPend();},
+  clear(){PEND.save({});renderPend();},
+  set(){const m=PEND.all(),o={};for(const k in m){if(Date.now()-(m[k].ts||0)<PEND.TTL)o[k]=1;}return o;},
+  list(){
+    const m=PEND.all();
+    return Object.keys(m).filter(k=>Date.now()-(m[k].ts||0)<PEND.TTL)
+      .map(k=>({aid:k,name:m[k].name,course:m[k].course,ts:m[k].ts}))
+      .sort((a,b)=>(b.ts||0)-(a.ts||0));
+  }
+};
+function renderPend(){
+  const box=$('pend');if(!box)return;
+  const l=PEND.list();
+  if(!l.length){box.style.display='none';box.innerHTML='';return;}
+  box.style.display='';
+  box.innerHTML='<h2><i class="dot" style="background:#e0533d"></i>需要扫码的签到'+
+    '<span class="pill" style="background:#fdeceb;color:#c33">'+l.length+'</span></h2>'+
+    '<div class="hint" style="margin:2px 0 6px">这些是二维码签到，必须有人现场扫一次。<br>扫到后 enc 会自动记住，同一活动不用再扫。</div>'+
+    l.map(x=>'<div class="aitem"><span class="aname">'+esc(String(x.name||x.aid).slice(0,20))+
+      '<br><small style="color:#8a94a6">'+esc(x.course||'')+'</small></span>'+
+      '<button class="ok" data-pend="'+esc(x.aid)+'">去扫码</button>'+
+      '<del data-pd="'+esc(x.aid)+'">✕</del></div>').join('')+
+    '<button class="g" id="do-pend-clear" style="margin-top:8px">清空待办</button>';
+  box.querySelectorAll('button[data-pend]').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>{if(x.dataset.t==='scan')x.click();});
+    toast('扫到后会自动签到',3200);
+  });
+  box.querySelectorAll('del[data-pd]').forEach(d=>d.onclick=()=>{PEND.del(d.dataset.pd);});
+  const c=$('do-pend-clear');if(c)c.onclick=()=>{PEND.clear();toast('已清空');};
+}
+
+/* ==================== 4.7 原生前台服务联动 ==================== */
+async function nativeMonStart(sec){
+  try{const r=await fetch('https://xxt.local/startmon?sec='+sec);const j=await r.json();return !!(j&&j.ok);}
+  catch(e){return false;}
+}
+async function nativeMonStop(){
+  try{await fetch('https://xxt.local/stopmon');}catch(e){}
+}
+async function nativeMonInfo(){
+  try{const r=await fetch('https://xxt.local/moninfo');const j=await r.json();return (j&&j.msg)||'';}
+  catch(e){return '';}
+}
+function pushMonInfo(txt){
+  try{fetch('https://xxt.local/monstat?t='+encodeURIComponent(txt||'')).catch(function(){});}catch(e){}
+}
+/* 供原生 Service 每轮调用，回报状态 */
+window.__xxtMonInfo=function(){
+  const t=(MON.cnt?('已检 '+MON.cnt):'')+(MON.signed?(' · 签 '+MON.signed):'');
+  pushMonInfo(t);
+};
+
+/* ==================== 4.8 enc 历史列表 ==================== */
+function renderEncc(){
+  const box=$('enclist');if(!box)return;
+  const m=ENCC.all();
+  const ks=Object.keys(m).filter(k=>Date.now()-(m[k].ts||0)<=ENCC.TTL)
+    .sort((a,b)=>(m[b].ts||0)-(m[a].ts||0));
+  const c=$('encc-cnt');if(c)c.textContent=ks.length+' 条';
+  if(!ks.length){box.innerHTML='<div class="hint" style="margin:4px 0 10px">还没有缓存的密钥</div>';return;}
+  const findA=aid=>{const a=(ST.acts||[]).find(x=>String(x.id)===String(aid));return a?(a.nameOne||a.name||aid):aid;};
+  box.innerHTML=ks.map(k=>{
+    const r=m[k];
+    const mins=Math.max(0,Math.floor((ENCC.TTL-(Date.now()-(r.ts||0)))/60000));
+    return '<div class="gitem"><span class="gname">'+esc(String(findA(k)).slice(0,20))+
+      '<br><small style="color:#8a94a6;font-family:Menlo,monospace">'+esc(String(r.enc||'').slice(0,22))+'…'+
+      ' · 剩 '+mins+' 分 · '+esc(r.from||'')+'</small></span>'+
+      '<button class="ok" data-ec="'+esc(k)+'">用它签</button></div>';
+  }).join('');  box.querySelectorAll('button[data-ec]').forEach(b=>b.onclick=()=>encUse(b.dataset.ec));
+}
+async function encUse(aid){
+  const enc=ENCC.get(aid);
+  if(!enc)return toast('该密钥已过期');
+  toast('用缓存密钥签到…',60000);
+  try{
+    const d=await ACTINFO({id:aid});
+    const a=(ST.acts||[]).find(x=>String(x.id)===String(aid))||{id:aid,otherId:2};
+    const t=await submit(a,d,{enc:enc,lat:d.locationLatitude||d.latitude,
+      lng:d.locationLongitude||d.longitude,address:d.locationText||''});
+    const ok=histSave(a,a.__courseName||'','二维码',t);
+    toast((ok?'✅ 签到成功':'⚠️ '+String(t).slice(0,50)),ok?2800:4000);
+    if(ok)PEND.del(aid);   /* v3.0：签到成功即从待办移除 */
+    renderEncc();renderPend();
+  }catch(e){toast('失败: '+e.message,3600);}
+}
+
+/* ==================== 5. enc 缓存（扫一次，全活动复用） ==================== */
+const ENCC={
+  K:'xxt_encc', TTL:1800000,   /* 30 分钟 */
+  all(){try{return JSON.parse(localStorage.getItem(ENCC.K)||'{}');}catch(e){return {};}},
+  save(m){try{localStorage.setItem(ENCC.K,JSON.stringify(m));}catch(e){}},
+  get(aid){const m=ENCC.all(),r=m[aid];if(!r)return '';if(Date.now()-(r.ts||0)>ENCC.TTL)return '';return r.enc||'';},
+  put(aid,enc,from){
+    if(!aid||!enc)return;
+    const m=ENCC.all();
+    m[aid]={enc:enc,ts:Date.now(),from:from||'?'};
+    const ks=Object.keys(m);
+    if(ks.length>60){ks.sort((a,b)=>(m[a].ts||0)-(m[b].ts||0)).slice(0,ks.length-60).forEach(k=>delete m[k]);}
+    ENCC.save(m);
+    log('💾 缓存 enc: '+aid+' -> '+String(enc).slice(0,14)+'… ('+(from||'?')+')');
+  },
+  count(){return Object.keys(ENCC.all()).length;}
+};
+
+/* ==================== 6. 签到历史 ==================== */
+const HIST={
+  K:'xxt_hist',
+  all(){try{const a=JSON.parse(localStorage.getItem(HIST.K)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}},
+  add(r){const l=HIST.all();l.unshift(r);try{localStorage.setItem(HIST.K,JSON.stringify(l.slice(0,300)));}catch(e){}},
+  signedSet(){const o={};HIST.all().forEach(r=>{if(r.ok)o[String(r.aid)]=1;});return o;},
+  clear(){try{localStorage.removeItem(HIST.K);}catch(e){}}
+};
+function histSave(act,course,signType,result){
+  const ok=(result==='success')||/成功|已签到|签到过|已签/.test(String(result));
+  HIST.add({t:Date.now(),aid:act&&act.id,course:course||'',name:(act&&(act.nameOne||act.name))||'',
+            type:signType||'',ok:ok,res:String(result).slice(0,120)});
+  return ok;
+}
+
+/* ==================== 7. 并发工具 ==================== */
+async function mapLimit(arr,limit,fn){
+  const out=new Array(arr.length);
+  let idx=0;
+  async function worker(){
+    while(true){
+      const i=idx++;
+      if(i>=arr.length)return;
+      try{out[i]=await fn(arr[i],i);}catch(e){out[i]=null;}
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(limit,arr.length||1)},worker));
+  return out;
+}
+
+/* ==================== 8. 人脸换 enc 诊断 ==================== */
+async function faceEncProbe(){
+  const a=(ST.acts&&ST.acts.find(x=>x.status===1))||ST.acts&&ST.acts[0];
+  if(!a)return toast('先加载签到列表，或选一个活动');
+  const d=await ACTINFO(a);
+  const otherId=Number((d&&d.otherId)||a.otherId||0);
+  const oid=FACE.oid();
+  log('===== 人脸换 enc 诊断 =====');
+  log('活动: '+(a.nameOne||a.id)+'  类型='+(TYPE[otherId]||otherId)+'  status='+a.status);
+  log('活动详情字段: '+JSON.stringify({ifphoto:d.ifphoto,openCheckFaceFlag:d.openCheckFaceFlag,
+      enc:d.enc,signCode:d.signCode,otherId:d.otherId}).slice(0,220));
+  log('人脸ID: '+(oid||'（未设置 —— 诊断仍会尝试）'));
+
+  /* 1) 先试原样 GET 详情，看有没有藏 enc 字段 */
+  try{
+    const full=await GET(AINFO(a.id));
+    const keys=Object.keys((full&&full.data)||{});
+    log('详情全部字段('+keys.length+'): '+keys.join(','));
+    const hit=keys.filter(k=>/enc|code|token|key|qr/i.test(k));
+    hit.forEach(k=>log('  ★ '+k+' = '+JSON.stringify((full.data||{})[k]).slice(0,120)));
+  }catch(e){log('详情读取失败 '+e.message);}
+
+  /* 2) check-face-result 换 enc */
+  const fr={currentFaceId:oid||'00000000000000000000000000000000',
+            LiveDetectionStatus:1,collectStatus:1,cxtime:String(Date.now())};
+  const u='https://mobilelearn.chaoxing.com/pptSign/check-face-result'
+    +'?DB_STRATEGY=PRIMARY_KEY&STRATEGY_PARA=activeId'
+    +'&activeId='+encodeURIComponent(a.id)
+    +'&faceResult='+encodeURIComponent(JSON.stringify(fr));
+  log('请求: '+u.slice(0,190));
+  try{
+    const r=await GET(u);
+    log('响应: '+JSON.stringify(r).slice(0,300));
+    const enc=(r&&(r.enc||(r.data&&r.data.enc)))||'';
+    if(enc){ENCC.put(a.id,enc,'face-probe');toast('✅ 换到 enc：'+String(enc).slice(0,16)+'…',5000);log('★ 成功换到 enc！填入缓存');}
+    else toast('未换到 enc（看日志了解原因）',4200);
+  }catch(e){log('异常 '+e.message);toast('换 enc 异常: '+e.message,4200);}
+
+  /* 3) 试探其他可能下发 enc 的接口 */
+  const probes=[
+    ['pptSign/analysis',   'https://mobilelearn.chaoxing.com/pptSign/analysis?vs=1&DB_STRATEGY=RANDOM&aid='+a.id],
+    ['v2 active detail',   'https://mobilelearn.chaoxing.com/v2/apis/active/getPPTActiveInfo?activeId='+a.id+'&_='+Date.now()],
+    ['qrSignInfo',         'https://mobilelearn.chaoxing.com/v2/apis/active/qrSignInfo?activeId='+a.id],
+    ['sign/enc',           'https://mobilelearn.chaoxing.com/v2/apis/sign/getEnc?activeId='+a.id],
+  ];
+  for(const [nm,u2] of probes){
+    try{
+      const r2=await GET(u2);
+      const txt=JSON.stringify(r2);
+      if(/enc/i.test(txt)) log('  ★ '+nm+' 里含 enc: '+txt.slice(0,200));
+      else log('  · '+nm+': '+txt.slice(0,90));
+    }catch(e){log('  · '+nm+' 失败 '+e.message);}
+  }
+  toast('诊断完成，点右上角「⋯」看日志',4200);
+}
+
+/* ==================== 事件绑定 ==================== */
+function renderHist(){
+  const box=$('histlist');if(!box)return;
+  const l=HIST.all();
+  const c=$('hist-cnt');if(c)c.textContent=l.length?l.length+' 条':'';
+  const e2=$('encc-cnt');if(e2)e2.textContent=ENCC.count()+' 条';
+  if(!l.length){box.innerHTML='<div class="hint" style="margin:4px 0 10px">还没有签到记录</div>';return;}
+  box.innerHTML=l.slice(0,15).map(r=>{
+    const d=new Date(r.t),p=n=>(n<10?'0':'')+n;
+    const tm=(d.getMonth()+1)+'/'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes());
+    return '<div class="aitem"><span class="aname">'+
+      (r.ok?'<span style="color:#12a150">✓</span> ':'<span style="color:#c33">✗</span> ')+
+      esc(String(r.name||r.aid||'').slice(0,22))+
+      '<br><small style="color:#8a94a6">'+tm+' · '+esc(r.type||'')+' · '+esc(String(r.res||'').slice(0,42))+'</small>'+
+      '</span></div>';
+  }).join('');
+}
+function bindV23(){
+  const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
+  on('do-multi',multiSign);
+  on('do-mon',monToggle);
+  on('do-face-up',()=>{const f=$('face-file');if(f)f.click();});
+  on('do-face-pull',facePull);
+  on('do-face-del',()=>{FACE.del();renderFace();toast('已删除人脸 ID');});
+  const ff=$('face-file');
+  if(ff)ff.onchange=()=>{const f=ff.files&&ff.files[0];ff.value='';if(f)faceUpload(f);};
+  on('do-groups',function(){doGroups(this);});
+  on('do-acc-add',()=>{
+    const u=($('acc-un')||{}).value||'',p=($('acc-pw')||{}).value||'';
+    if(!u||!p)return toast('请填账号和密码');
+    if(u===LS.g('un',''))return toast('这是主账号，不用重复添加');
+    if(!ACC.add(u.trim(),p))return toast('该账号已在列表里');
+    $('acc-un').value='';$('acc-pw').value='';
+    renderAcc();toast('已添加 '+u);
+  });
+  on('do-acc-clear',()=>{ACC.clear();renderAcc();toast('已清空子账号');});
+  on('do-face-probe',faceEncProbe);
+  on('do-hist',function(){renderHist();renderEncc();});
+  on('do-cache-clear',()=>{CACHE.clear();toast('已清空课程/活动缓存');});
+  on('do-hist-clear',()=>{HIST.clear();renderHist();toast('已清空记录');});
+  on('do-encc-clear',()=>{try{localStorage.removeItem(ENCC.K);}catch(e){}renderHist();toast('已清空 enc 缓存');});
+  renderAcc();renderFace();monUi();renderHist();renderPend();renderEncc();
+  /* v3.0：读取原生壳版本显示在「关于」 */
+  try{fetch('https://xxt.local/version').then(r=>r.json()).then(j=>{
+    const e=$('ver-native');if(e&&j&&j.msg)e.textContent='原生壳 v'+j.msg;}).catch(()=>{});}catch(e){}
+  /* 启动时检查原生服务状态，若在跑就同步显示 */
+  nativeMonInfo().then(function(st){
+    if(st==='running'&&!MON.timer){
+      log('检测到原生监听服务在运行，恢复界面状态');
+      const sec=Number(($('mon-interval')||{}).value)||60;
+      MON.timer=setInterval(monTick,sec*1000);
+      monUi();renderPend();
+    }
+  }).catch(function(){});
+}
+bindV23();
+
+</script>
+</body>
+</html>
