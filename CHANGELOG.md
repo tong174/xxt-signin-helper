@@ -1,5 +1,31 @@
 # Changelog
 
+## v3.1（2026-10-22）
+
+签名与 v2.x/v3.0 一致，可直接覆盖安装（versionCode 31）。
+
+### 修复
+- **群聊签到 IM 登录必败**：学习通下发的 `imAccount.password` 是 DES/ECB/PKCS5 加密的十六进制串（密钥 `SL2(M/eD`，参考 ChaoxingSignFaker `resolveImPassword`），旧版直接当明文提交 100% 失败。v3.1 内置纯 JS DES 解密（加/解密、hex、PKCS5 去填充），解密失败自动回退明文尝试
+- **部分机型相册选图 / 上传人脸点了没反应**：原生壳实现 `onShowFileChooser` + `onActivityResult`（WebView 默认不实现文件选择，`input[type=file].click()` 静默失败）；H5 侧 input 挂载 DOM 后再触发（游离 input 部分 WebView 不弹选择器），并支持一次多选最多 6 张
+- IM token 请求兼容三种 body 形态：表单 / JSON / JSON+表单 Content-Type（新增原生代理 `mode=3` 原样透传 body）
+- 全局 JS 错误捕获：`window.error` / `unhandledrejection` 直写日志面板，问题可追溯
+- 群列表长文本溢出：省略号截断
+
+### 新增
+- **一键扫描群聊并签到**：3 路并发拉全部群消息 → 汇总去重 → 4 路并发拉活动详情 → 普通/位置/签到码类自动签 → 结果面板汇总；二维码类逐个提供「缓存 enc 直签 / 摄像头扫码 / 粘贴 enc」入口
+- **摄像头变焦**：硬件变焦（`zoom` constraint）优先，无硬件支持时 CSS 放大 + 解码侧 ROI 裁剪同步；双指捏合缩放；变焦倍数实时显示
+- **手电筒**：设备支持 torch 时一键开关
+- **连续扫模式**：签完不关摄像头继续扫（同内容 8 秒去重），批量场景不用反复重开
+- **远距离小码识别**：优先申请 2560×1440；jsQR 改为「中心区域原生像素 ROI（960px）」解码，不再整帧缩小
+- **扫码引擎自愈**：系统 BarcodeDetector 连续 6 帧无结果自动切换 jsQR
+- **相册多区域全分辨率识别**：`scanImageFile` 按整图 → 中心 → 四象限逐区域解码（1400px）；`createImageBitmap` 失败回退 `Image` + ObjectURL
+- MonitorService WakeLock：每轮检测持锁 2 分钟，息屏时保证 monTick 的 JS 跑完
+- 原生 `onConsoleMessage` → logcat（tag `xxtjs`）调试转发
+- 构建脚本 `--vcode/--vname` 参数化
+
+### 继承 v3.0（H5 层全量保留）
+统一签到核心 `signActivity()`、会话保活自动重登、快速启动免登录、课程/活动缓存按 uid 隔离、登录前清 Cookie、人脸照片压缩上传、深色模式、XSS 转义、jsQR 内置引擎等。
+
 ## v3.0（2026-10）
 
 全面优化版。签名证书与 v2.x 一致，可直接覆盖安装。

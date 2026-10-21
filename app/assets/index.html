@@ -103,11 +103,21 @@ button.sm{padding:8px 14px;font-size:13px;width:auto;margin:0;border-radius:9px}
   box-shadow:0 0 14px #4a7cf7;animation:cl 2.2s ease-in-out infinite}
 @keyframes cl{0%,100%{top:6%}50%{top:94%}}
 .cdark{position:absolute;left:0;right:0;z-index:1;background:rgba(0,0,0,.42);pointer-events:none}
-.cbtns{position:relative;z-index:3;margin-top:auto;padding:0 18px 42px;display:flex;gap:10px}
+.cbtns{position:relative;z-index:3;margin-top:0;padding:0 18px 42px;display:flex;gap:10px}
 .cbtns button{flex:1;padding:14px 0;border-radius:12px;border:0;font-size:14.5px;font-weight:600;
   background:rgba(255,255,255,.19);color:#fff;backdrop-filter:blur(6px)}
 .cbtns button.alt{background:rgba(74,124,247,.92)}
-#cam{width:100%;height:100%;object-fit:cover;display:block}
+#cam{width:100%;height:100%;object-fit:cover;display:block;transform-origin:50% 50%;transition:transform .12s linear}
+.cbar-r{display:flex;gap:8px}
+.czoomwrap{position:relative;z-index:3;display:flex;justify-content:center;padding:0 18px 10px;margin-top:auto}
+.czoom{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.55);border-radius:999px;
+  padding:7px 12px;backdrop-filter:blur(8px)}
+.czoom button{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.18);
+  color:#fff;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
+.czoom span{color:#fff;font-size:13.5px;min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+.czoom button.mini{width:auto;padding:0 12px;border-radius:999px;font-size:12.5px;height:30px;
+  background:rgba(255,255,255,.14);color:#cfd8e6}
+.czoom button.mini.on{background:#4a7cf7;color:#fff}
 #scanline{position:absolute;left:12%;right:12%;top:50%;height:2px;background:rgba(74,124,247,.9);
   box-shadow:0 0 12px rgba(74,124,247,.9);animation:sc 2s ease-in-out infinite}
 @keyframes sc{0%,100%{top:22%}50%{top:78%}}
@@ -116,8 +126,8 @@ button.sm{padding:8px 14px;font-size:13px;width:auto;margin:0;border-radius:9px}
 .row2 button{flex:0 0 96px;margin-bottom:0}
 .gitem{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid #f0f2f6}
 .gitem:last-child{border-bottom:0}
-.gitem .gname{flex:1;font-size:13.5px;word-break:break-all}
-.gitem button{margin:0;padding:7px 12px;font-size:12.5px;flex:0 0 auto;border-radius:9px}
+.gitem .gname{flex:1;min-width:0;font-size:13.5px;word-break:break-word;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gitem button{margin:0;padding:7px 12px;font-size:12.5px;flex:0 0 auto;width:auto;border-radius:9px}
 .aitem{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #f0f2f6}
 .aitem:last-child{border-bottom:0}
 .aitem .aname{flex:1;font-size:13.5px}
@@ -240,8 +250,8 @@ html.dk #qrwrap canvas{border-color:#e7eaf1}
       </div>
       <div class="card">
         <h2><i class="dot"></i>群聊签到</h2>
-        <div class="hint">从学习通群聊里直接读取签到活动 —— <b>群聊里的二维码签到不需要扫码</b>。</div>
-        <button id="do-groups">💬 加载我的群聊</button>
+        <div class="hint">一次扫完所有群聊：普通/位置/签到码类<b>自动签</b>；二维码类会列出来，点「扫码/enc」现场扫一次即可。</div>
+        <button id="do-groups">💬 一键扫描群聊并签到</button>
         <div id="glist"></div>
       </div>
       <div class="card">
@@ -288,7 +298,7 @@ html.dk #qrwrap canvas{border-color:#e7eaf1}
       </div>
       <div class="card">
         <h2><i class="dot"></i>关于</h2>
-        <div class="kv"><b>版本</b><span>v3.0（页面）· <span id="ver-native">原生…</span></span></div>
+        <div class="kv"><b>版本</b><span>v3.1（页面）· <span id="ver-native">原生…</span></span></div>
         <div class="kv"><b>原理</b><span>直连学习通官方接口</span></div>
         <div class="kv"><b>消耗</b><span class="hi">零消耗 · 无密钥</span></div>
         <div class="hint">协议参考 GitHub 开源项目 cxOrz/chaoxing-signin、MetaQiu/xxtSignApi、ChaoxingSignFaker</div>
@@ -305,6 +315,13 @@ html.dk #qrwrap canvas{border-color:#e7eaf1}
 <script src="jsqr.min.js"></script>
 <script src="qr.js"></script>
 <script>
+/* 全局错误捕获：出问题直接进日志面板，不再"点了没反应" */
+window.addEventListener('error',function(e){
+  try{log('❌ JS错误: '+(e.message||'')+' @'+(e.filename||'').split('/').pop()+':'+e.lineno);}catch(_){}
+});
+window.addEventListener('unhandledrejection',function(e){
+  try{var r=e.reason;log('❌ Promise错误: '+((r&&(r.message||r))||''));}catch(_){}
+});
 function b64(s){const b=new TextEncoder().encode(s);let t='';for(let i=0;i<b.length;i++)t+=String.fromCharCode(b[i]);return btoa(t);}
 async function api(m,u,b,f){
   const r=await fetch('https://xxt.local/r?d='+encodeURIComponent(b64(JSON.stringify({m:m,u:u,b:b||'',x:f?1:0}))));
@@ -669,27 +686,73 @@ async function shareAct(a,d){
 }
 
 let camStream=null,camTimer=null,detector=null,jsCanvas=null;
-function stopCam(){if(camTimer){clearInterval(camTimer);camTimer=null;}
-  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
-/* v3.0：三级扫码引擎
+function stopCam(){
+  if(camTimer){clearInterval(camTimer);camTimer=null;}
+  if(camStream){try{camStream.getTracks().forEach(function(t){t.stop();});}catch(e){}camStream=null;}
+}
+/* ===== v3.1 扫码状态：变焦 / 手电 / 连续扫 ===== */
+const CAM={zoom:1,hw:false,hwMin:1,hwMax:1,track:null,caps:{},torch:false,torchOn:false,
+           continuous:false,last:'',lastTs:0};
+function camLabel(){
+  const v=$('czv');if(!v)return;
+  v.textContent=(Math.round(CAM.zoom*10)/10).toFixed(1)+'x';
+}
+async function camApplyZoom(){
+  camLabel();
+  const v=$('cam');
+  if(CAM.hw&&CAM.track){
+    /* 光学/数码变焦走摄像头硬件，画质最好 */
+    try{await CAM.track.applyConstraints({advanced:[{zoom:Math.max(CAM.hwMin,Math.min(CAM.hwMax,CAM.zoom))}]});}
+    catch(e){log('变焦失败: '+e.message);}
+  }else if(v){
+    /* 不支持硬件变焦时用 CSS 放大预览（解码侧同步做 ROI 裁剪） */
+    const z=Math.max(1,CAM.zoom);
+    v.style.transform='scale('+z+')';
+    v.style.transformOrigin='50% 50%';
+  }
+}
+function camZoom(d){
+  const lo=CAM.hw?CAM.hwMin:1, hi=CAM.hw?CAM.hwMax:6;
+  CAM.zoom=Math.max(lo,Math.min(hi,CAM.zoom+d));
+  camApplyZoom();
+}
+/* 把指定区域按接近原生像素送入 jsQR —— 远距离小码的关键 */
+function jsqrRegion(src,sx,sy,sw,sh,maxSide){
+  if(typeof jsQR!=='function')return null;
+  if(!sw||!sh)return null;
+  const cv=jsCanvas||(jsCanvas=document.createElement('canvas'));
+  const sc=Math.min(1,(maxSide||960)/Math.max(sw,sh));
+  const dw=Math.max(1,Math.round(sw*sc)),dh=Math.max(1,Math.round(sh*sc));
+  if(cv.width!==dw)cv.width=dw;
+  if(cv.height!==dh)cv.height=dh;
+  const ctx=cv.getContext('2d',{willReadFrequently:true});
+  try{ctx.drawImage(src,sx,sy,sw,sh,0,0,dw,dh);}catch(e){return null;}
+  let img;try{img=ctx.getImageData(0,0,dw,dh);}catch(e){return null;}
+  const r=jsQR(img.data,dw,dh,{inversionAttempts:'dontInvert'});
+  return (r&&r.data)?r.data:null;
+}
+/* v3.1：三级扫码引擎
    ① BarcodeDetector（系统级，快）
    ② jsQR 纯 JS 解码（无 GMS 的国产 ROM 全能用 —— 兜底主力）
+      改为「中心原生像素 ROI」而不是整帧缩小，后排小码也能解
    ③ 都没有 → 引导用「粘贴」 */
 function jsqrShim(){
   if(typeof jsQR!=='function')return null;
   return {__jsqr:true,detect:async function(src){
     const w=src.videoWidth||src.width||0,h=src.videoHeight||src.height||0;
     if(!w||!h)return [];
-    const cv=jsCanvas||(jsCanvas=document.createElement('canvas'));
-    const sc=Math.min(1,760/Math.max(w,h));
-    const cw=Math.max(1,Math.round(w*sc)),ch=Math.max(1,Math.round(h*sc));
-    if(cv.width!==cw)cv.width=cw;
-    if(cv.height!==ch)cv.height=ch;
-    const ctx=cv.getContext('2d',{willReadFrequently:true});
-    try{ctx.drawImage(src,0,0,cw,ch);}catch(e){return [];}
-    let img;try{img=ctx.getImageData(0,0,cw,ch);}catch(e){return [];}
-    const r=jsQR(img.data,cw,ch,{inversionAttempts:'dontInvert'});
-    return (r&&r.data)?[{rawValue:r.data}]:[];
+    const isVideo=!!src.videoWidth;
+    const z=isVideo?(CAM.hw?1:Math.max(1,CAM.zoom||1)):1;
+    const base=Math.min(w,h);
+    const side=Math.max(200,Math.round(base/z));
+    const rois=[[Math.round((w-side)/2),Math.round((h-side)/2),side,side]];
+    if(z<1.05&&base>1200)rois.push([0,0,base,base]);
+    for(let i=0;i<rois.length;i++){
+      const r=rois[i];
+      const t=jsqrRegion(src,r[0],r[1],r[2],r[3],960);
+      if(t)return [{rawValue:t}];
+    }
+    return [];
   }};
 }
 async function mkDetector(){
@@ -697,14 +760,13 @@ async function mkDetector(){
   if(typeof BarcodeDetector!=='undefined'){
     try{
       const d=new BarcodeDetector({formats:['qr_code']});
-      /* 某些 ROM 声明了 BarcodeDetector 但底层缺 GMS，detect 会抛错 —— 实测一帧再采用 */
       detector=d;
       log('扫码引擎：BarcodeDetector（系统级）');
       return detector;
     }catch(e){}
   }
   const shim=jsqrShim();
-  if(shim){detector=shim;log('扫码引擎：jsQR（内置纯 JS 解码）');return detector;}
+  if(shim){detector=shim;log('扫码引擎：jsQR（内置纯 JS 解码，原生像素 ROI）');return detector;}
   detector=null;
   return null;
 }
@@ -712,19 +774,47 @@ async function openCam(){
   stopCam();
   const d=document.createElement('div');d.id='camfull';
   d.innerHTML='<div class="cbar"><span id="ch">正在启动摄像头…</span>'+
-    '<button id="ccls">✕</button></div>'+
+    '<div class="cbar-r"><button id="ctorch" style="opacity:.5">🔦</button><button id="ccls">✕</button></div></div>'+
     '<video id="cam" playsinline muted autoplay></video>'+
     '<div class="cframe"><i></i><i></i><i></i><i></i><div class="claser"></div></div>'+
+    '<div class="czoomwrap"><div class="czoom">'+
+      '<button id="czm">－</button><span id="czv">1.0x</span><button id="czp">＋</button>'+
+      '<button id="czc" class="mini">连续扫</button></div></div>'+
     '<div class="cbtns"><button class="alt" id="calb">🖼 从相册选图</button>'+
     '<button id="ccls2">关闭</button></div>';
   document.body.appendChild(d);
   const hint=$('ch'), closeAll=()=>{stopCam();try{d.remove();}catch(e){}};
   $('ccls').onclick=closeAll;$('ccls2').onclick=closeAll;
   $('calb').onclick=()=>{closeAll();openAlbum();};
+  $('czm').onclick=()=>camZoom(-0.5);
+  $('czp').onclick=()=>camZoom(0.5);
+  $('czc').onclick=()=>{
+    CAM.continuous=!CAM.continuous;
+    $('czc').classList.toggle('on',CAM.continuous);
+    toast(CAM.continuous?'连续扫码：签完继续扫，不用重开':'连续扫码已关闭',2200);
+  };
+  if(CAM.continuous)$('czc').classList.add('on');
+  camLabel();
+  /* 双指缩放 */
+  let pinch0=0,zoom0=1;
+  const distOf=t=>Math.sqrt(Math.pow(t[0].clientX-t[1].clientX,2)+Math.pow(t[0].clientY-t[1].clientY,2));
+  d.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){pinch0=distOf(e.touches);zoom0=CAM.zoom;}
+  },{passive:true});
+  d.addEventListener('touchmove',e=>{
+    if(e.touches.length===2&&pinch0>0){
+      const z=zoom0*distOf(e.touches)/pinch0;
+      const lo=CAM.hw?CAM.hwMin:1, hi=CAM.hw?CAM.hwMax:6;
+      CAM.zoom=Math.max(lo,Math.min(hi,z));
+      camApplyZoom();
+      try{e.preventDefault();}catch(err){}
+    }
+  },{passive:false});
   try{
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('无摄像头接口');
-    /* 高分辨率 + 连续对焦，保证小二维码也能扫清 */
-    const cons=[{video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false},
+    /* 尽量高分辨率：后排的小二维码需要足够像素 */
+    const cons=[{video:{facingMode:{ideal:'environment'},width:{ideal:2560},height:{ideal:1440}},audio:false},
+                {video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false},
                 {video:{facingMode:'environment'},audio:false},
                 {video:true,audio:false}];
     let err=null;
@@ -736,19 +826,59 @@ async function openCam(){
     await v.play().catch(()=>{});
     const tr=(camStream.getVideoTracks&&camStream.getVideoTracks()[0])||null;
     if(tr){
-      try{const caps=tr.getCapabilities?tr.getCapabilities():{};
-        const adv=[];if(caps.focusMode&&caps.focusMode.indexOf('continuous')>=0)adv.push({focusMode:'continuous'});
-        if(adv.length&&tr.applyConstraints)await tr.applyConstraints({advanced:adv});}catch(e){}
+      CAM.track=tr;
+      try{
+        const caps=tr.getCapabilities?tr.getCapabilities():{};CAM.caps=caps||{};
+        const adv=[];
+        if(caps.focusMode&&caps.focusMode.indexOf('continuous')>=0)adv.push({focusMode:'continuous'});
+        if(adv.length&&tr.applyConstraints)await tr.applyConstraints({advanced:adv});
+        if(caps.zoom&&typeof caps.zoom.max==='number'&&caps.zoom.max>caps.zoom.min){
+          CAM.hw=true;CAM.hwMin=caps.zoom.min||1;CAM.hwMax=caps.zoom.max;
+          CAM.zoom=Math.max(1,CAM.hwMin);
+          log('摄像头支持硬件变焦 '+CAM.hwMin+'~'+CAM.hwMax+'x');
+        }else{
+          log('摄像头无硬件变焦，使用数字变焦（ROI 裁剪解码）');
+        }
+        CAM.torch=!!caps.torch;
+      }catch(e){}
+      camApplyZoom();
     }
-    const det=await mkDetector();
+    $('ctorch').onclick=async()=>{
+      if(!CAM.track)return;
+      CAM.torchOn=!CAM.torchOn;
+      try{
+        await CAM.track.applyConstraints({advanced:[{torch:CAM.torchOn}]});
+        $('ctorch').style.opacity=CAM.torchOn?'1':'0.5';
+      }catch(e){CAM.torchOn=false;toast('这台设备不支持手电筒',2600);}
+    };
+    const size=v.videoWidth&&v.videoHeight?(v.videoWidth+'×'+v.videoHeight):'';
+    let det=await mkDetector();
     if(!det){hint.textContent='本机无扫码引擎，请用「从相册选图」或「粘贴」';return;}
-    hint.textContent=det.__jsqr?'对准二维码，自动识别（内置引擎）':'对准二维码，自动识别';
+    hint.textContent=(det.__jsqr?'对准二维码，自动识别（内置引擎）':'对准二维码，自动识别')+(size?(' · '+size):'');
+    let miss=0;
     camTimer=setInterval(async()=>{
       try{const r=await det.detect(v);
-        if(r&&r.length){const t=r[0].rawValue;stopCam();try{d.remove();}catch(e){}
-          onScan(t);return;}
+        if(!r||!r.length){
+          /* 系统引擎连续失败几帧就换 jsQR —— 有些 ROM 的 BarcodeDetector 对小码/远景无能 */
+          if(!det.__jsqr&&typeof jsQR==='function'){
+            if(++miss>=6){det=jsqrShim();miss=0;
+              if(det)log('系统识别引擎连续失败，已切换 jsQR（原生像素 ROI）');}
+          }
+        }else{miss=0;}
+        if(r&&r.length){
+          const t=r[0].rawValue;
+          if(CAM.continuous&&t===CAM.last&&Date.now()-CAM.lastTs<8000)return;
+          CAM.last=t;CAM.lastTs=Date.now();
+          if(CAM.continuous){
+            toast('已识别：'+String(t).slice(0,30)+'…（继续扫）',2200);
+            onScan(t);
+            return;
+          }
+          stopCam();try{d.remove();}catch(e){}
+          onScan(t);return;
+        }
       }catch(e){}
-    },det.__jsqr?420:320);
+    },det.__jsqr?480:320);
   }catch(e){
     hint.textContent='摄像头打不开：'+e.message;
     log('摄像头失败: '+e.message);
@@ -756,20 +886,68 @@ async function openCam(){
 }
 
 function openAlbum(){
-  const f=document.createElement('input');f.type='file';f.accept='image/*';
+  /* v3.1：必须挂到 DOM 上再 click —— 游离的 input 在部分 WebView 里不会弹出选择器 */
+  const f=document.createElement('input');
+  f.type='file';f.accept='image/*';f.multiple=true;
+  f.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+  document.body.appendChild(f);
+  const cleanup=()=>{try{f.remove();}catch(e){}};
   f.onchange=async()=>{
-    const file=f.files&&f.files[0];if(!file)return;
-    toast('识别中…',60000);
+    const files=Array.from(f.files||[]).slice(0,6);
+    if(!files.length){cleanup();return;}
+    toast('识别中…（'+files.length+' 张）',60000);
     try{
-      const det=await mkDetector();
-      if(!det)throw new Error('本机无扫码引擎，请改用粘贴');
-      const bmp=await createImageBitmap(file);
-      const r=await det.detect(bmp);
-      if(r&&r.length){toast('识别成功',1200);log('相册识别: '+r[0].rawValue.slice(0,110));onScan(r[0].rawValue);}
-      else toast('没识别到二维码，换个角度拍清楚点',3500);
-    }catch(e){toast('识别失败: '+e.message,3500);}
+      for(const file of files){
+        const t=await scanImageFile(file);
+        if(t){
+          log('相册识别: '+t.slice(0,110));
+          cleanup();toast('识别成功',1200);onScan(t);return;
+        }
+      }
+      toast('没识别到二维码：靠近一点、保证清晰，或用「粘贴」',4200);
+    }catch(e){toast('识别失败: '+e.message,4000);}
+    cleanup();
   };
   f.click();
+  setTimeout(()=>{try{if(!f.files||!f.files.length)cleanup();}catch(e){}},180000);
+}
+/* 图片多区域、全分辨率解码（相册图往往整图很大、二维码很小） */
+async function scanImageFile(file){
+  let bmp=null,img=null;
+  try{bmp=await createImageBitmap(file);}
+  catch(e){
+    img=await new Promise((res,rej)=>{
+      const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('图片读取失败'));
+      i.src=URL.createObjectURL(file);
+    });
+  }
+  const src=bmp||img;
+  try{
+    /* ① 系统引擎 */
+    const det=await mkDetector();
+    if(det&&!det.__jsqr){
+      try{const r=await det.detect(src);if(r&&r.length)return r[0].rawValue;}catch(e){}
+    }
+    /* ② jsQR 多区域全分辨率 */
+    if(typeof jsQR==='function'){
+      const W=src.width||src.naturalWidth||0,H=src.height||src.naturalHeight||0;
+      if(!W||!H)return null;
+      const m=Math.min(W,H);
+      const rois=[[0,0,W,H],[Math.round((W-m)/2),Math.round((H-m)/2),m,m]];
+      if(Math.max(W,H)>1400){
+        const hw=Math.floor(W/2),hh=Math.floor(H/2);
+        rois.push([0,0,hw,hh],[hw,0,W-hw,hh],[0,hh,hw,H-hh],[hw,hh,W-hw,H-hh]);
+      }
+      for(const r of rois){
+        const t=jsqrRegion(src,r[0],r[1],r[2],r[3],1400);
+        if(t)return t;
+      }
+    }
+  }finally{
+    try{if(bmp&&bmp.close)bmp.close();}catch(e){}
+    try{if(img&&img.src)URL.revokeObjectURL(img.src);}catch(e){}
+  }
+  return null;
 }
 function openPaste(){
   sheet('<h3>粘贴二维码内容</h3><div class="hint">用任意扫码工具扫教师投屏的码，把结果粘进来</div>'+
@@ -935,7 +1113,7 @@ async function afterLogin(u){
 (async function(){
   const u=LS.g('un',''),p=LS.g('pw','');
   if(u)$('un').value=u;if(p)$('pw').value=p;
-  log('学习通助手 v3.0 启动');
+  log('学习通助手 v3.1 启动');
   THEME.apply();
   /* v3.0 快速启动：原生 Cookie 罐里还有有效会话就直接进，省一次登录（更快、少触发风控） */
   try{
@@ -1305,24 +1483,177 @@ async function faceEnc(activeId,objectId){
   return enc;
 }
 
+/* DES-ECB / PKCS5 纯 JS 实现 —— 用于解密学习通下发的 IM 密码
+   密钥："SL2(M/eD"（8 字节 ASCII，来自 ChaoxingSignFaker） */
+const DES = (function () {
+  const IP = [58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4,
+    62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8,
+    57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3,
+    61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7];
+  const FP = [40, 8, 48, 16, 56, 24, 64, 32, 39, 7, 47, 15, 55, 23, 63, 31,
+    38, 6, 46, 14, 54, 22, 62, 30, 37, 5, 45, 13, 53, 21, 61, 29,
+    36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51, 19, 59, 27,
+    34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25];
+  const E = [32, 1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 8, 9, 10, 11, 12, 13,
+    12, 13, 14, 15, 16, 17, 16, 17, 18, 19, 20, 21, 20, 21, 22, 23, 24, 25,
+    24, 25, 26, 27, 28, 29, 28, 29, 30, 31, 32, 1];
+  const P = [16, 7, 20, 21, 29, 12, 28, 17, 1, 15, 23, 26, 5, 18, 31, 10,
+    2, 8, 24, 14, 32, 27, 3, 9, 19, 13, 30, 6, 22, 11, 4, 25];
+  const PC1 = [57, 49, 41, 33, 25, 17, 9, 1, 58, 50, 42, 34, 26, 18, 10, 2,
+    59, 51, 43, 35, 27, 19, 11, 3, 60, 52, 44, 36, 63, 55, 47, 39, 31, 23,
+    15, 7, 62, 54, 46, 38, 30, 22, 14, 6, 61, 53, 45, 37, 29, 21, 13, 5, 28, 20, 12, 4];
+  const PC2 = [14, 17, 11, 24, 1, 5, 3, 28, 15, 6, 21, 10, 23, 19, 12, 4,
+    26, 8, 16, 7, 27, 20, 13, 2, 41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48,
+    44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29, 32];
+  const SH = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1];
+  const S = [
+    [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7, 0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
+      4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0, 15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13],
+    [15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10, 3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5,
+      0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15, 13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9],
+    [10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8, 13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1,
+      13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7, 1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12],
+    [7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15, 13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9,
+      10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4, 3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14],
+    [2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9, 14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6,
+      4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14, 11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3],
+    [12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11, 10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8,
+      9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6, 4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13],
+    [4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1, 13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6,
+      1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2, 6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12],
+    [13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7, 1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2,
+      7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8, 2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11]
+  ];
+
+  function bytesToBits(b) {
+    const out = new Array(b.length * 8);
+    for (let i = 0; i < b.length; i++) for (let j = 0; j < 8; j++) out[i * 8 + j] = (b[i] >> (7 - j)) & 1;
+    return out;
+  }
+  function bitsToBytes(bits) {
+    const out = new Uint8Array(bits.length / 8);
+    for (let i = 0; i < out.length; i++) { let v = 0; for (let j = 0; j < 8; j++) v = (v << 1) | bits[i * 8 + j]; out[i] = v; }
+    return out;
+  }
+  function permute(bits, table) { return table.map(p => bits[p - 1]); }
+  function xor(a, b) { return a.map((v, i) => v ^ b[i]); }
+  function rot(bits, n) { return bits.slice(n).concat(bits.slice(0, n)); }
+  function keySchedule(key) {
+    const kb = permute(bytesToBits(key), PC1);
+    let c = kb.slice(0, 28), d = kb.slice(28);
+    const ks = [];
+    for (let r = 0; r < 16; r++) {
+      c = rot(c, SH[r]); d = rot(d, SH[r]);
+      ks.push(permute(c.concat(d), PC2));
+    }
+    return ks;
+  }
+  function f(r, key) {
+    const x = xor(permute(r, E), key);
+    const out = [];
+    for (let i = 0; i < 8; i++) {
+      const b = x.slice(i * 6, i * 6 + 6);
+      const row = (b[0] << 1) | b[5], col = (b[1] << 3) | (b[2] << 2) | (b[3] << 1) | b[4];
+      const v = S[i][row * 16 + col];
+      out.push((v >> 3) & 1, (v >> 2) & 1, (v >> 1) & 1, v & 1);
+    }
+    return permute(out, P);
+  }
+  function block(bytes8, ks) {
+    const bits = permute(bytesToBits(bytes8), IP);
+    let l = bits.slice(0, 32), r = bits.slice(32);
+    for (let i = 0; i < 16; i++) { const nl = r; r = xor(l, f(r, ks[i])); l = nl; }
+    /* DES 末置换的输入是 R16||L16（左右交换） */
+    return bitsToBytes(permute(r.concat(l), FP));
+  }
+  function encryptBlock(bytes8, ks) { return block(bytes8, ks); }
+  function decryptBlock(bytes8, ks) { return block(bytes8, ks.slice().reverse()); }
+
+  function ecbDecrypt(bytes, key) {
+    const ks = keySchedule(key);
+    const out = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i += 8) out.set(decryptBlock(bytes.subarray(i, i + 8), ks), i);
+    return out;
+  }
+  function ecbEncrypt(bytes, key) {
+    const ks = keySchedule(key);
+    const out = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i += 8) out.set(encryptBlock(bytes.subarray(i, i + 8), ks), i);
+    return out;
+  }
+  function hexToBytes(h) {
+    h = String(h || '').replace(/[^0-9a-fA-F]/g, '');
+    if (h.length % 2) h = '0' + h;
+    const out = new Uint8Array(h.length / 2);
+    for (let i = 0; i < out.length; i++) out[i] = parseInt(h.substr(i * 2, 2), 16);
+    return out;
+  }
+  function pkcs5Unpad(b) {
+    if (!b.length) return b;
+    const n = b[b.length - 1];
+    if (n < 1 || n > 8 || n > b.length) return b;
+    for (let i = b.length - n; i < b.length; i++) if (b[i] !== n) return b;
+    return b.slice(0, b.length - n);
+  }
+  return { ecbDecrypt, ecbEncrypt, hexToBytes, pkcs5Unpad, bitsToBytes, bytesToBits };
+})();
+
+
+
 /* ==================== 4. 群聊签到 ==================== */
 const GRP={im:null,groups:[]};
 const UA_EM='Easemob-SDK(Android) 4.9.0.1';
+const IM_DES_KEY='SL2(M/eD';
+/* 学习通下发的 imAccount.password 是 DES/ECB/PKCS5 加密的十六进制串，
+   直接当明文用必然 100% 登录失败 —— 参考 ChaoxingSignFaker ChaoxingIMHelper.resolveImPassword */
+function imPlainPassword(raw){
+  const s=String(raw||'');
+  if(s.length>=16&&/^[0-9a-fA-F]+$/.test(s)){
+    try{
+      const key=new TextEncoder().encode(IM_DES_KEY);
+      const dec=DES.pkcs5Unpad(DES.ecbDecrypt(DES.hexToBytes(s),key));
+      const txt=new TextDecoder().decode(dec);
+      if(txt&&txt.length>=4&&!/[\x00-\x1f\x7f]/.test(txt))return txt;
+    }catch(e){log('IM 密码解密失败，回退明文: '+e.message);}
+  }
+  return s;
+}
+async function imToken(uid,pwd){
+  /* 兼容三种 body 形态：表单 / JSON / JSON+表单Content-Type（参考实现用的是第三种） */
+  const tries=[
+    {n:'form',p:{m:'POST',u:'https://a1-vip6.easemob.com/cx-dev/cxstudy/token',x:1,
+      b:'grant_type=password&username='+encodeURIComponent(uid)+'&password='+encodeURIComponent(pwd),
+      h:{'User-Agent':UA_EM}}},
+    {n:'json',p:{m:'POST',u:'https://a1-vip6.easemob.com/cx-dev/cxstudy/token',x:0,
+      b:JSON.stringify({grant_type:'password',username:uid,password:pwd}),
+      h:{'Content-Type':'application/json','User-Agent':UA_EM}}},
+    {n:'json-formct',p:{m:'POST',u:'https://a1-vip6.easemob.com/cx-dev/cxstudy/token',x:3,
+      b:JSON.stringify({grant_type:'password',username:uid,password:pwd}),
+      h:{'Content-Type':'application/x-www-form-urlencoded','User-Agent':UA_EM}}}
+  ];
+  let last='';
+  for(const t of tries){
+    let r=null;
+    try{r=await apiEx(t.p);}catch(e){last=e.message;continue;}
+    const tk=(r&&r.access_token)||'';
+    if(tk)return {token:tk,user:(r.user&&r.user.username)||''};
+    last=String((r&&(r.error_description||r.error||r.__raw))||JSON.stringify(r)).slice(0,140);
+    log('IM token['+t.n+'] 失败: '+last);
+  }
+  throw new Error('IM 登录失败: '+last);
+}
 async function grpLogin(){
   const j=await GET('https://sso.chaoxing.com/apis/login/userLogin4Uname.do');
   const m=(j&&j.msg)||{};
   const ia=((m.accountInfo||{}).imAccount)||{};
   const uid=String(m.uid||ia.uid||'');
-  const pwd=String(ia.password||'');
-  if(!uid||!pwd)throw new Error('未取到学习通 IM 账号');
-  const body='grant_type=password&username='+encodeURIComponent(uid)+'&password='+encodeURIComponent(pwd);
-  const r=await apiEx({m:'POST',u:'https://a1-vip6.easemob.com/cx-dev/cxstudy/token',x:1,b:body,
-    h:{'User-Agent':UA_EM}});
-  const tk=(r&&r.access_token)||'';
-  const un=(r&&r.user&&r.user.username)||'';
-  if(!tk)throw new Error('IM 登录失败: '+String((r&&(r.error_description||r.error))||'').slice(0,70));
-  GRP.im={token:tk,username:un};
-  log('IM 登录成功 user='+un);
+  const encPwd=String(ia.password||m.imEncryptedPassword||'');
+  if(!uid||!encPwd)throw new Error('未取到 IM 账号（登录态可能失效，请重新登录）');
+  const pwd=imPlainPassword(encPwd);
+  log('IM 凭据 uid='+uid+' · 密码'+(pwd===encPwd?'按明文尝试':'已 DES 解密')+'（'+pwd.length+' 字符）');
+  const t=await imToken(uid,pwd);
+  GRP.im={token:t.token,username:t.user||uid};
+  log('IM 登录成功 user='+GRP.im.username);
   return GRP.im;
 }
 async function grpList(){
@@ -1368,11 +1699,88 @@ async function doGroups(btn){
   if(btn){btn.disabled=true;btn.textContent='连接中…';}
   toast('正在连接学习通 IM…',60000);
   try{
-    const g=await grpList();
-    renderGroups();
-    toast('共 '+g.length+' 个群聊',3000);
+    await grpList();
+    log('群聊 '+GRP.groups.length+' 个，开始扫描');
+    await grpScanAll();
   }catch(e){toast('群聊失败: '+e.message,4200);log('❌ 群聊 '+e.message);}
-  finally{if(btn){btn.disabled=false;btn.textContent='💬 加载我的群聊';}}
+  finally{if(btn){btn.disabled=false;btn.textContent='💬 一键扫描群聊并签到';}}
+}
+/* v3.1：群聊不再逐个手点 —— 一次扫完所有群，非二维码直接签，二维码给扫码/enc 入口 */
+async function grpScanAll(){
+  const box=$('glist');
+  if(box)box.innerHTML='<div class="hint" style="margin:8px 0 0">正在扫描 '+GRP.groups.length+' 个群聊…</div>';
+  toast('正在扫描群聊签到…',60000);
+  const found={};
+  await mapLimit(GRP.groups,3,async g=>{
+    try{
+      const msgs=await grpMsgs(g.id);
+      for(const m of msgs){
+        let a=null;try{a=grpParse(m.msg||'');}catch(e){}
+        if(!a||!a.aid||found[a.aid])continue;
+        a.__gid=g.id;a.__gname=grpName(g);found[a.aid]=a;
+      }
+    }catch(e){}
+  });
+  const arr=Object.values(found).sort((x,y)=>(y.ts||0)-(x.ts||0)).slice(0,20);
+  log('群聊共发现 '+arr.length+' 个签到活动');
+  if(!arr.length){
+    if(box)box.innerHTML='<div class="hint" style="margin:8px 0 0">最近没有群聊签到</div>';
+    toast('群聊里没有签到',3000);return;
+  }
+  /* 拉详情（4 路并发，避免串行超时把整轮拖死） */
+  const rows=await mapLimit(arr,4,async a=>{
+    let d={};
+    try{d=(await ACTINFO({id:a.aid}))||{};}catch(e){}
+    return {a:a,d:d,tp:Number(d.otherId||0),live:Number(d.status)===1};
+  });
+  const live=rows.filter(r=>r.live);
+  const plain=live.filter(r=>r.tp!==2);
+  const qr=live.filter(r=>r.tp===2);
+  /* 非二维码：直接签 */
+  let ok=0,fail=0;
+  for(const r of plain){
+    toast('自动签到：'+(r.a.title||r.a.aid),60000);
+    try{
+      if(r.a.courseId&&r.a.classId)await preSign(r.a.aid,r.a.courseId,r.a.classId);
+      const lat=r.d.locationLatitude||r.d.latitude,lng=r.d.locationLongitude||r.d.longitude;
+      const t=await submit({id:r.a.aid,otherId:r.tp},r.d,{lat:lat,lng:lng,address:r.d.locationText||''});
+      const good=histSave({id:r.a.aid,nameOne:r.a.title||''},r.a.courseName||'',TYPE[r.tp]||'',
+        '群聊自动 '+String(t).slice(0,80));
+      if(good)ok++;else fail++;
+      log((good?'✅ ':'⚠️ ')+'群聊 '+r.a.aid+' '+String(t).slice(0,70));
+    }catch(e){fail++;log('❌ 群聊 '+r.a.aid+' '+e.message);}
+  }
+  renderGrpResult(rows,ok,fail);
+  toast('自动签到：成功 '+ok+(fail?(' · 失败 '+fail):'')+(qr.length?(' · '+qr.length+' 个二维码待扫'):''),4200);
+}
+function renderGrpResult(rows,ok,fail){
+  const box=$('glist');if(!box)return;
+  const live=rows.filter(r=>r.live);
+  const qr=live.filter(r=>r.tp===2);
+  let h='<div class="kv"><b>群聊</b><span>'+GRP.groups.length+' 个</span></div>';
+  h+='<div class="kv"><b>进行中签到</b><span class="hi">'+live.length+' 个</span></div>';
+  h+='<div class="kv"><b>自动签到</b><span>成功 '+ok+(fail?(' · 失败 '+fail):'')+'</span></div>';
+  if(qr.length){
+    h+='<div class="hint" style="margin:10px 0 4px;color:#c33">二维码签到 '+qr.length+' 个 —— 需要 enc，现场扫一次即可全班复用</div>';
+    h+=qr.map(r=>'<div class="gitem"><span class="gname">'+esc(r.a.title||r.a.aid)+
+      '<br><small style="color:#8a94a6">'+esc(r.a.courseName||'')+'</small></span>'+
+      '<button class="ok" data-qaid="'+esc(r.a.aid)+'">扫码/enc</button></div>').join('');
+  }
+  if(!live.length)h+='<div class="hint" style="margin:8px 0 0">群聊里有签到消息，但都已结束</div>';
+  box.innerHTML=h;
+  box.querySelectorAll('button[data-qaid]').forEach(b=>b.onclick=()=>qrChoice(b.dataset.qaid,b.dataset.qname||''));
+}
+function qrChoice(aid){
+  const cached=ENCC.get(aid);
+  sheet('<h3>二维码签到</h3><div class="hint">这个活动需要 enc 密钥。现场任意一个同学扫到，全班都能用同一个 enc 签。</div>'+
+    (cached?'<button class="ok" id="qc-use">⚡ 用缓存的 enc 直接签</button>':'')+
+    '<button id="qc-cam">📷 打开摄像头扫码</button>'+
+    '<button class="g" id="qc-paste">📋 粘贴 enc</button>'+
+    '<button class="g" id="qc-close">关闭</button>');
+  $('qc-close').onclick=closeSheet;
+  $('qc-cam').onclick=()=>{closeSheet();openCam();};
+  $('qc-paste').onclick=()=>{closeSheet();openPaste();};
+  const u=$('qc-use');if(u)u.onclick=()=>{closeSheet();encUse(aid);};
 }
 function grpName(g){
   let nm=g.name||'';
@@ -1401,7 +1809,7 @@ async function grpScan(gid,btn){
     }
     if(!acts.length){toast('这个群最近没有签到消息',3600);return;}
     let h='<h3>群聊签到（'+acts.length+' 个）</h3>';
-    h+='<div class="hint">群聊里的签到直接可签，二维码类不需要扫码。</div>';
+    h+='<div class="hint">群聊里的活动直接可签；二维码类还需要 enc（现场扫一次即可全班复用）。</div>';
     h+=acts.map(a=>'<div class="gitem"><span class="gname">'+esc(a.title||a.aid)+
       '<br><small style="color:#8a94a6">'+esc(a.courseName||'')+(a.typeName?(' · '+esc(a.typeName)):'')+'</small></span>'+
       '<button class="ok" data-aid="'+esc(a.aid)+'" data-cid="'+esc(a.courseId)+'" data-kid="'+esc(a.classId)+'">签到</button></div>').join('');

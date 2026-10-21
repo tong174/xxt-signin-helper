@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.webkit.WebView;
 
 /**
@@ -19,12 +18,6 @@ import android.webkit.WebView;
  * 原理：H5 的 setInterval 在后台会被系统节流甚至冻结，
  *      改由原生 Handler 定时调用 WebView 的 monTick()，
  *      配合前台通知把进程优先级提到最高，避免被 LMK 回收。
- *
- * v3.0 变更：
- *   - 息屏保活：每次 tick 短暂持有 PARTIAL_WAKE_LOCK，避免 CPU 休眠导致 JS 不执行
- *   - WebView 失效自愈：页面被系统回收后，通知栏提示「请打开 App」，并在恢复后自动继续
- *   - 通知显示更完整：已检 / 已签 / 间隔 / 最近状态
- *   - 计时更稳：用 postAtTime 对齐，避免 tick 耗时累积漂移
  */
 public class MonitorService extends Service {
 
@@ -35,8 +28,8 @@ public class MonitorService extends Service {
     private int intervalSec = 60;
     private int ticks = 0;
     private String lastInfo = "";
-    private PowerManager.WakeLock wl;
     private static MonitorService inst = null;
+    private android.os.PowerManager.WakeLock wl = null;
 
     public static boolean isRunning() { return inst != null; }
 
@@ -53,13 +46,10 @@ public class MonitorService extends Service {
         Tick(MonitorService s) { this.s = s; }
         @Override public void run() {
             s.ticks++;
-            s.acquireWl();
+            s.holdWl();
             s.runJs();
             s.updateNoti();
-            s.releaseWlDelayed();
-            /* 对齐到下一整点间隔，减少累积漂移 */
-            long delay = Math.max(15, s.intervalSec) * 1000L;
-            if (s.h != null) s.h.postDelayed(this, delay);
+            if (s.h != null) s.h.postDelayed(this, Math.max(15, s.intervalSec) * 1000L);
         }
     }
 
@@ -72,12 +62,6 @@ public class MonitorService extends Service {
         }
     }
 
-    static class WlRelease implements Runnable {
-        private final MonitorService s;
-        WlRelease(MonitorService s) { this.s = s; }
-        @Override public void run() { s.releaseWl(); }
-    }
-
     @Override
     public IBinder onBind(Intent intent) { return null; }
 
@@ -87,13 +71,6 @@ public class MonitorService extends Service {
         inst = this;
         h = new Handler(Looper.getMainLooper());
         makeChannel();
-        try {
-            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-            if (pm != null) {
-                wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "xxt:monitor");
-                wl.setReferenceCounted(false);
-            }
-        } catch (Exception ignored) {}
     }
 
     @Override
@@ -114,24 +91,20 @@ public class MonitorService extends Service {
     public void onDestroy() {
         inst = null;
         if (h != null) h.removeCallbacksAndMessages(null);
-        releaseWl();
+        try { if (wl != null && wl.isHeld()) wl.release(); } catch (Exception ignored) {}
         super.onDestroy();
     }
 
-    /* ---------- WakeLock：只在 tick 期间短暂持有 ---------- */
-    private void acquireWl() {
+    /* 每轮检测持锁 2 分钟：息屏时 CPU 不休眠，WebView 的 JS 才能跑完 */
+    private void holdWl() {
         try {
-            if (wl != null && !wl.isHeld()) wl.acquire(30_000L);   /* 最长 30s 自动释放兜底 */
-        } catch (Exception ignored) {}
-    }
-
-    private void releaseWlDelayed() {
-        if (h != null) h.postDelayed(new WlRelease(this), 8000L);  /* JS 有充足时间跑完 */
-    }
-
-    private void releaseWl() {
-        try {
-            if (wl != null && wl.isHeld()) wl.release();
+            if (wl == null) {
+                android.os.PowerManager pm =
+                        (android.os.PowerManager) getSystemService(POWER_SERVICE);
+                wl = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "xxt:monitor");
+                wl.setReferenceCounted(false);
+            }
+            wl.acquire(120000);
         } catch (Exception ignored) {}
     }
 
@@ -144,7 +117,6 @@ public class MonitorService extends Service {
             ch.setDescription("后台自动检测学习通签到");
             ch.enableLights(false);
             ch.enableVibration(false);
-            ch.setShowBadge(false);
             nm.createNotificationChannel(ch);
         }
     }
@@ -163,13 +135,8 @@ public class MonitorService extends Service {
         } else {
             b = new Notification.Builder(this);
         }
-        boolean webAlive = MainActivity.getWeb() != null;
         String txt = "已检测 " + ticks + " 次 · 每 " + intervalSec + " 秒";
-        if (!webAlive) {
-            txt = "⚠ 页面已被系统回收，点此重新打开 App";
-        } else if (lastInfo != null && !lastInfo.isEmpty()) {
-            txt = txt + " · " + lastInfo;
-        }
+        if (lastInfo != null && !lastInfo.isEmpty()) txt = txt + " · " + lastInfo;
         b.setContentTitle("学习通助手 · 监听中")
          .setContentText(txt)
          .setSmallIcon(android.R.drawable.stat_notify_sync)
@@ -190,8 +157,7 @@ public class MonitorService extends Service {
     private void runJs() {
         WebView w = MainActivity.getWeb();
         if (w == null) {
-            lastInfo = "页面未就绪，请打开 App";
-            updateNoti();
+            lastInfo = "页面未就绪";
             return;
         }
         w.post(new JsRunner(w, "(function(){try{"

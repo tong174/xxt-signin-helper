@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xxt.qd"
-    android:versionCode="30"
-    android:versionName="3.0">
+    android:versionCode="31"
+    android:versionName="3.1">
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
 
@@ -21,7 +21,6 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="学习通签到助手"
-        android:allowBackup="false"
         android:usesCleartextTraffic="true"
         android:hardwareAccelerated="true"
         android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar">

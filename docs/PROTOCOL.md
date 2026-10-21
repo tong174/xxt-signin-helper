@@ -142,9 +142,15 @@ GET https://mobilelearn.chaoxing.com/pptSign/check-face-result
 1. 取 IM 账号：
    GET https://sso.chaoxing.com/apis/login/userLogin4Uname.do
        → msg.accountInfo.imAccount.{uid,password}（username = uid 的小写十六进制形式）
-2. 取 token：
+   ⚠ password 是 DES/ECB/PKCS5 加密后的十六进制串，不是明文！
+     解密：DES-ECB decrypt(hex→bytes, key="SL2(M/eD" 的 8 字节 ASCII) → PKCS5 去填充 → 明文
+     （参考 ChaoxingSignFaker ChaoxingIMHelper.resolveImPassword；v3.1 内置纯 JS DES 实现，
+       解密失败时回退按明文尝试）
+2. 取 token（三种 body 形态依次尝试，不同网关部署接受的形态不同）：
    POST https://a1-vip6.easemob.com/cx-dev/cxstudy/token
-        grant_type=password&username=<u>&password=<p>
+        ① form:  grant_type=password&username=<u>&password=<p>
+        ② JSON:  {"grant_type":"password","username":<u>,"password":<p>}（Content-Type: application/json）
+        ③ JSON body + Content-Type: application/x-www-form-urlencoded（参考实现形态，代理 mode=3）
         UA: Easemob-SDK(Android) 4.9.0.1
 3. 群列表：
    GET https://a1-vip6.easemob.com/cx-dev/cxstudy/users/<u>/joined_chatgroups?detail=true&version=v3&pagenum=1&pagesize=200
@@ -161,7 +167,7 @@ MessageBody{ 5:KeyValue{ 1:"attachment", 6:<JSON字符串> } }
 JSON: { attachmentType:15, at_chat_course:{ atype:2|74, aid, title, courseInfo:{courseid,classid,coursename} } }
 ```
 
-`attachmentType==15 && atype∈{2,74}` 即签到卡片。**群聊里的二维码签到消息可直接读取 aid 提交，无需 enc**（这是群聊路径独有的能力）。
+`attachmentType==15 && atype∈{2,74}` 即签到卡片。卡片直接给出 aid/courseId/classId：**非二维码类活动可立即自动签**；二维码类（atype=2）提交时仍需 enc —— 现场扫一次即可（enc 与账号无关，全班复用），App 为此提供「缓存 enc / 摄像头扫码 / 粘贴」三个入口。
 
 ## 8. 原生代理桥（本 App 私有协议）
 
@@ -169,18 +175,20 @@ H5 → 原生：
 
 ```
 GET https://xxt.local/r?d=<urlencode(base64(JSON))>
-JSON: { m:方法, u:目标URL, b:请求体, x:0json/1form/2multipart, h:自定义头, f:multipart字段, file:{name,filename,mime,b64} }
+JSON: { m:方法, u:目标URL, b:请求体, x:0json/1form/2multipart/3原样透传(不设Content-Type), h:自定义头, f:multipart字段, file:{name,filename,mime,b64} }
 ```
 
-原生端点：
+原生端点（v3.1 壳实现）：
 
 | 端点 | 作用 |
 |---|---|
-| `/r?d=` | HTTP 代理（自动带 Cookie 罐、失败重试 1 次） |
+| `/r?d=` | HTTP 代理（自动带 Cookie 罐） |
 | `/cookies` | 读取 Cookie 罐（页面取 _uid/fid） |
-| `/clearcookies` | 清空 Cookie 罐（登录/登出/切号前调用） |
-| `/version` | 原生壳版本 |
 | `/startmon?sec=N` `/stopmon` `/moninfo` `/monstat?t=` | 前台监控服务控制与状态回写 |
+
+> 注：H5 还会调用 `/clearcookies`（登录前清罐）与 `/version`（关于页显示原生版本）。
+> v3.1 原生壳尚未实现这两个端点，请求会静默失败（fetch 被 catch 吞掉，功能降级：
+> 登录不清旧 Cookie、关于页显示「原生…」），计划在 v3.2 壳层补齐。
 
 资源域：页面与静态资源挂在 `https://app.local/`（安全上下文，摄像头 API 可用）。
 分享 scheme：`xxtqd://s?d=<base64url(JSON)>`，由原生 onNewIntent 注入页面 `window.__xxtShare(uri)`。
